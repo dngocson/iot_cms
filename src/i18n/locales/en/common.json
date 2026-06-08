@@ -19,5 +19,21 @@
 	},
 	"language": {
 		"label": "Language"
+	},
+	"nav": {
+		"aboutUs": "About Us"
+	},
+	"header": {
+		"nav": {
+			"dashboard": "Dashboard",
+			"alerts": "Alerts",
+			"home": "Home",
+			"settings": "Settings",
+			"waterMonitoring": "Water Monitoring",
+			"airMonitoring": "Air Monitoring",
+			"records": "Records"
+		},
+		"waterMeter": "Water Meter",
+		"greeting": "Glad to see you"
 	}
 }

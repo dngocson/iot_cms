@@ -10,33 +10,115 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as WaterMonitoringIndexRouteImport } from './routes/water-monitoring/index'
+import { Route as WaterMeterIndexRouteImport } from './routes/water-meter/index'
+import { Route as WarningLogsIndexRouteImport } from './routes/warning-logs/index'
+import { Route as RecordsIndexRouteImport } from './routes/records/index'
+import { Route as AirMonitoringIndexRouteImport } from './routes/air-monitoring/index'
+import { Route as AboutUsIndexRouteImport } from './routes/about-us/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WaterMonitoringIndexRoute = WaterMonitoringIndexRouteImport.update({
+  id: '/water-monitoring/',
+  path: '/water-monitoring/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WaterMeterIndexRoute = WaterMeterIndexRouteImport.update({
+  id: '/water-meter/',
+  path: '/water-meter/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WarningLogsIndexRoute = WarningLogsIndexRouteImport.update({
+  id: '/warning-logs/',
+  path: '/warning-logs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecordsIndexRoute = RecordsIndexRouteImport.update({
+  id: '/records/',
+  path: '/records/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AirMonitoringIndexRoute = AirMonitoringIndexRouteImport.update({
+  id: '/air-monitoring/',
+  path: '/air-monitoring/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutUsIndexRoute = AboutUsIndexRouteImport.update({
+  id: '/about-us/',
+  path: '/about-us/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about-us/': typeof AboutUsIndexRoute
+  '/air-monitoring/': typeof AirMonitoringIndexRoute
+  '/records/': typeof RecordsIndexRoute
+  '/warning-logs/': typeof WarningLogsIndexRoute
+  '/water-meter/': typeof WaterMeterIndexRoute
+  '/water-monitoring/': typeof WaterMonitoringIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about-us': typeof AboutUsIndexRoute
+  '/air-monitoring': typeof AirMonitoringIndexRoute
+  '/records': typeof RecordsIndexRoute
+  '/warning-logs': typeof WarningLogsIndexRoute
+  '/water-meter': typeof WaterMeterIndexRoute
+  '/water-monitoring': typeof WaterMonitoringIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about-us/': typeof AboutUsIndexRoute
+  '/air-monitoring/': typeof AirMonitoringIndexRoute
+  '/records/': typeof RecordsIndexRoute
+  '/warning-logs/': typeof WarningLogsIndexRoute
+  '/water-meter/': typeof WaterMeterIndexRoute
+  '/water-monitoring/': typeof WaterMonitoringIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/about-us/'
+    | '/air-monitoring/'
+    | '/records/'
+    | '/warning-logs/'
+    | '/water-meter/'
+    | '/water-monitoring/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/about-us'
+    | '/air-monitoring'
+    | '/records'
+    | '/warning-logs'
+    | '/water-meter'
+    | '/water-monitoring'
+  id:
+    | '__root__'
+    | '/'
+    | '/about-us/'
+    | '/air-monitoring/'
+    | '/records/'
+    | '/warning-logs/'
+    | '/water-meter/'
+    | '/water-monitoring/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutUsIndexRoute: typeof AboutUsIndexRoute
+  AirMonitoringIndexRoute: typeof AirMonitoringIndexRoute
+  RecordsIndexRoute: typeof RecordsIndexRoute
+  WarningLogsIndexRoute: typeof WarningLogsIndexRoute
+  WaterMeterIndexRoute: typeof WaterMeterIndexRoute
+  WaterMonitoringIndexRoute: typeof WaterMonitoringIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +130,59 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/water-monitoring/': {
+      id: '/water-monitoring/'
+      path: '/water-monitoring'
+      fullPath: '/water-monitoring/'
+      preLoaderRoute: typeof WaterMonitoringIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/water-meter/': {
+      id: '/water-meter/'
+      path: '/water-meter'
+      fullPath: '/water-meter/'
+      preLoaderRoute: typeof WaterMeterIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/warning-logs/': {
+      id: '/warning-logs/'
+      path: '/warning-logs'
+      fullPath: '/warning-logs/'
+      preLoaderRoute: typeof WarningLogsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/records/': {
+      id: '/records/'
+      path: '/records'
+      fullPath: '/records/'
+      preLoaderRoute: typeof RecordsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/air-monitoring/': {
+      id: '/air-monitoring/'
+      path: '/air-monitoring'
+      fullPath: '/air-monitoring/'
+      preLoaderRoute: typeof AirMonitoringIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about-us/': {
+      id: '/about-us/'
+      path: '/about-us'
+      fullPath: '/about-us/'
+      preLoaderRoute: typeof AboutUsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutUsIndexRoute: AboutUsIndexRoute,
+  AirMonitoringIndexRoute: AirMonitoringIndexRoute,
+  RecordsIndexRoute: RecordsIndexRoute,
+  WarningLogsIndexRoute: WarningLogsIndexRoute,
+  WaterMeterIndexRoute: WaterMeterIndexRoute,
+  WaterMonitoringIndexRoute: WaterMonitoringIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

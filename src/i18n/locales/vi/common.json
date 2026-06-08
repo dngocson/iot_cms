@@ -19,5 +19,21 @@
 	},
 	"language": {
 		"label": "Ngôn ngữ"
+	},
+	"nav": {
+		"aboutUs": "Về chúng tôi"
+	},
+	"header": {
+		"nav": {
+			"dashboard": "Bảng điều khiển",
+			"alerts": "Cảnh báo",
+			"home": "Trang chủ",
+			"settings": "Cài đặt",
+			"waterMonitoring": "Giám sát nước",
+			"airMonitoring": "Giám sát không khí",
+			"records": "Bản ghi"
+		},
+		"waterMeter": "Đồng hộ nước",
+		"greeting": "Rất vui được gặp bạn"
 	}
 }

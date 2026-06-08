@@ -32,6 +32,7 @@ Key Features
 - shadcn
 - zod
 - recharts
+- motion
   Do not introduce new major libraries unless there is a strong reason.
 
 ---
