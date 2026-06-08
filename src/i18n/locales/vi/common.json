@@ -1,0 +1,23 @@
+{
+	"app": {
+		"name": "IoT CMS",
+		"tagline": "Giám sát cảm biến, thiết bị và cảnh báo theo thời gian thực"
+	},
+	"actions": {
+		"save": "Lưu",
+		"cancel": "Hủy",
+		"delete": "Xóa",
+		"edit": "Sửa",
+		"create": "Tạo mới",
+		"search": "Tìm kiếm",
+		"retry": "Thử lại"
+	},
+	"states": {
+		"loading": "Đang tải…",
+		"empty": "Không có dữ liệu",
+		"error": "Đã xảy ra lỗi"
+	},
+	"language": {
+		"label": "Ngôn ngữ"
+	}
+}

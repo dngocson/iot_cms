@@ -1,0 +1,23 @@
+{
+	"app": {
+		"name": "IoT CMS",
+		"tagline": "Monitor sensors, devices, and alerts in real time"
+	},
+	"actions": {
+		"save": "Save",
+		"cancel": "Cancel",
+		"delete": "Delete",
+		"edit": "Edit",
+		"create": "Create",
+		"search": "Search",
+		"retry": "Retry"
+	},
+	"states": {
+		"loading": "Loading…",
+		"empty": "No data available",
+		"error": "Something went wrong"
+	},
+	"language": {
+		"label": "Language"
+	}
+}
