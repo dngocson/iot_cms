@@ -24,13 +24,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type HeaderLink = {
-	href: string;
-	icon: React.ReactNode;
-	translationKey: string;
-};
-
-const headerLinks: HeaderLink[] = [
+const headerLinks = [
 	{
 		href: "/",
 		icon: <LayoutGrid className="w-5 h-5" />,
@@ -66,7 +60,7 @@ const headerLinks: HeaderLink[] = [
 		icon: <Archive className="w-5 h-5" />,
 		translationKey: "header.nav.alerts",
 	},
-];
+] as const;
 
 const containerVariants: Variants = {
 	hidden: { opacity: 0 },
@@ -229,18 +223,13 @@ export function Header() {
 							</DropdownMenuTrigger>
 							<DropdownMenuContent className="min-w-56">
 								<DropdownMenuGroup>
-									<DropdownMenuLabel>
-										{t("language.label")}
-									</DropdownMenuLabel>
+									<DropdownMenuLabel>{t("language.label")}</DropdownMenuLabel>
 									<DropdownMenuRadioGroup
 										value={language}
 										onValueChange={handleLanguageChange}
 									>
 										{LANGUAGES.map((lang) => (
-											<DropdownMenuRadioItem
-												key={lang.code}
-												value={lang.code}
-											>
+											<DropdownMenuRadioItem key={lang.code} value={lang.code}>
 												{lang.label}
 											</DropdownMenuRadioItem>
 										))}
@@ -264,9 +253,7 @@ export function Header() {
 						className="flex items-center gap-2 ml-2"
 					>
 						<div className="text-right">
-							<p className="text-xs text-amber-700">
-								{t("header.greeting")}
-							</p>
+							<p className="text-xs text-amber-700">{t("header.greeting")}</p>
 							<p className="text-sm font-semibold text-amber-900">Robert</p>
 						</div>
 						<motion.div
