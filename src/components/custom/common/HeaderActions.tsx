@@ -1,0 +1,128 @@
+import { Globe, User } from "lucide-react";
+import { motion, type Variants } from "motion/react";
+import { memo } from "react";
+import { useTranslation } from "react-i18next";
+import { LANGUAGES, type LanguageCode } from "#/constants/languages";
+import { useSettingsStore } from "#/store/settings-store";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuGroup,
+	DropdownMenuLabel,
+	DropdownMenuRadioGroup,
+	DropdownMenuRadioItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+const containerVariants: Variants = {
+	hidden: { opacity: 0 },
+	visible: {
+		opacity: 1,
+		transition: {
+			staggerChildren: 0.05,
+			delayChildren: 0.1,
+		},
+	},
+};
+
+const itemVariants: Variants = {
+	hidden: { opacity: 0, y: -10 },
+	visible: {
+		opacity: 1,
+		y: 0,
+		transition: {
+			type: "spring",
+			stiffness: 100,
+			damping: 12,
+		},
+	},
+};
+
+/**
+ * Header action buttons (language switcher, account) and user greeting.
+ *
+ * Memoized and prop-less so it does not re-render when the header re-renders
+ * on navigation — it only re-renders when the selected language changes.
+ */
+export const HeaderActions = memo(function HeaderActions() {
+	const { t } = useTranslation();
+	const language = useSettingsStore((state) => state.language);
+	const setLanguage = useSettingsStore((state) => state.setLanguage);
+
+	const handleLanguageChange = (languageCode: string) => {
+		setLanguage(languageCode as LanguageCode);
+	};
+
+	return (
+		<motion.div
+			variants={containerVariants}
+			initial="hidden"
+			animate="visible"
+			className="flex items-center gap-4 ml-12"
+		>
+			{/* Language & User icons */}
+			<motion.div
+				variants={containerVariants}
+				initial="hidden"
+				animate="visible"
+				className="flex items-center gap-3"
+			>
+				<DropdownMenu>
+					<DropdownMenuTrigger
+						render={
+							<motion.button
+								variants={itemVariants}
+								className="p-2.5 rounded-full border-2 border-amber-300 hover:bg-amber-50 transition-colors duration-200 text-amber-700"
+								title={t("language.label")}
+							>
+								<Globe className="w-5 h-5" />
+							</motion.button>
+						}
+					/>
+					<DropdownMenuContent className="min-w-56">
+						<DropdownMenuGroup>
+							<DropdownMenuLabel>{t("language.label")}</DropdownMenuLabel>
+							<DropdownMenuRadioGroup
+								value={language}
+								onValueChange={handleLanguageChange}
+							>
+								{LANGUAGES.map((lang) => (
+									<DropdownMenuRadioItem key={lang.code} value={lang.code}>
+										{lang.label}
+									</DropdownMenuRadioItem>
+								))}
+							</DropdownMenuRadioGroup>
+						</DropdownMenuGroup>
+					</DropdownMenuContent>
+				</DropdownMenu>
+
+				<motion.button
+					variants={itemVariants}
+					className="p-2.5 rounded-full border-2 border-amber-300 hover:bg-amber-50 transition-colors duration-200 text-amber-700"
+					title="Account"
+				>
+					<User className="w-5 h-5" />
+				</motion.button>
+			</motion.div>
+
+			{/* User Greeting */}
+			<motion.div
+				variants={itemVariants}
+				className="flex items-center gap-2 ml-2"
+			>
+				<div className="text-right">
+					<p className="text-xs text-amber-700">{t("header.greeting")}</p>
+					<p className="text-sm font-semibold text-amber-900">Robert</p>
+				</div>
+				<motion.div
+					initial={{ opacity: 0, scale: 0.8 }}
+					animate={{ opacity: 1, scale: 1 }}
+					transition={{ delay: 0.3, duration: 0.3 }}
+					className="w-10 h-10 rounded-full bg-linear-to-br from-blue-300 to-purple-400 flex items-center justify-center text-white font-bold shadow-md"
+				>
+					R
+				</motion.div>
+			</motion.div>
+		</motion.div>
+	);
+});

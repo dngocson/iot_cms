@@ -35,5 +35,15 @@
 		},
 		"waterMeter": "Water Meter",
 		"greeting": "Glad to see you"
+	},
+	"home": {
+		"overview": "Overview",
+		"overviewTime": "Updated at {{time}} - {{date}}",
+		"labels": {
+			"good": "Good",
+			"warning": "Warning",
+			"bad": "Bad",
+			"noConnection": "No Connection"
+		}
 	}
 }

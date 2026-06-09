@@ -35,5 +35,15 @@
 		},
 		"waterMeter": "Đồng hộ nước",
 		"greeting": "Rất vui được gặp bạn"
+	},
+	"home": {
+		"overview": "Tổng quan",
+		"overviewTime": "Cập nhật lúc {{time}} - {{date}}",
+		"labels": {
+			"good": "Tốt",
+			"warning": "Cảnh báo",
+			"bad": "Xấu",
+			"noConnection": "Mất kết nối"
+		}
 	}
 }
