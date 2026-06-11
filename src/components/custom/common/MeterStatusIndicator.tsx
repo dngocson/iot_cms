@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { getMeterStatus } from "#/lib/meter-status";
+import { getMeterStatus } from "#/helper/meter-status";
 import { cn } from "#/lib/utils";
 import type { MeterThreshold } from "#/types/meter";
 import { METER_STATUS_CONFIG } from "./meter-status-config";
@@ -12,8 +12,9 @@ type MeterStatusIndicatorProps = {
 	/** At or above this threshold the reading is "bad". */
 	badThreshold: MeterThreshold;
 	/** Hide the text label and show only the colored dot. */
-	showLabel?: boolean;
 	className?: string;
+	name: string;
+	unit: string;
 };
 
 /**
@@ -24,17 +25,26 @@ const MeterStatusIndicator = ({
 	value,
 	goodThreshold,
 	badThreshold,
-	showLabel = true,
 	className,
+	name,
+	unit,
 }: MeterStatusIndicatorProps) => {
-	const { t } = useTranslation();
 	const status = getMeterStatus(value, goodThreshold, badThreshold);
-	const { color, labelKey } = METER_STATUS_CONFIG[status];
-
+	const { color } = METER_STATUS_CONFIG[status];
 	return (
-		<div className={cn("flex items-center gap-2", className)}>
-			<span className={cn("size-3 shrink-0 rounded-full", color)} aria-hidden />
-			{showLabel && <span className="text-sm font-medium">{t(labelKey)}</span>}
+		<div
+			style={{
+				backgroundColor: color,
+			}}
+			className={cn(
+				"flex items-center gap-2 w-full h-full flex-col rounded-2xl border p-3 text-white",
+				className,
+				color,
+			)}
+		>
+			<span className="self-start">{name}</span>
+			<span className="font-bold tabular-nums text-2xl">{value ?? "--"}</span>
+			<span className="self-end">{unit}</span>
 		</div>
 	);
 };

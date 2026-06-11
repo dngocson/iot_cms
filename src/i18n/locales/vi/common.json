@@ -20,9 +20,7 @@
 	"language": {
 		"label": "Ngôn ngữ"
 	},
-	"nav": {
-		"aboutUs": "Về chúng tôi"
-	},
+
 	"header": {
 		"nav": {
 			"dashboard": "Bảng điều khiển",
@@ -44,6 +42,22 @@
 			"warning": "Cảnh báo",
 			"bad": "Xấu",
 			"noConnection": "Mất kết nối"
+		},
+		"sectionLabels": {
+			"waterMonitoring": "Quan trắc nước",
+			"airMonitoring": "Quan trắc không khí",
+			"waterMeter": "Đồng hộ nước"
 		}
+	},
+	"unit": {
+		"temperature": "°C",
+		"humidity": "%",
+		"pressure": "hPa",
+		"co2": "ppm",
+		"pm25": "µg/m³",
+		"pm10": "µg/m³",
+		"noise": "dB",
+		"waterFlow": "L/min",
+		"energyConsumption": "kWh"
 	}
 }

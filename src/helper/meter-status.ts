@@ -48,7 +48,11 @@ export const thresholdSchema = z
  * Throws a `ZodError` when the threshold is invalid.
  */
 export function parseThreshold(threshold: MeterThreshold): number {
-	return thresholdSchema.parse(threshold);
+	const result = thresholdSchema.safeParse(threshold);
+	if (!result.success) {
+		throw new Error(result.error.issues[0].message);
+	}
+	return result.data;
 }
 
 /**

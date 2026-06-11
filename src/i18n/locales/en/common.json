@@ -20,9 +20,7 @@
 	"language": {
 		"label": "Language"
 	},
-	"nav": {
-		"aboutUs": "About Us"
-	},
+
 	"header": {
 		"nav": {
 			"dashboard": "Dashboard",
@@ -44,6 +42,22 @@
 			"warning": "Warning",
 			"bad": "Bad",
 			"noConnection": "No Connection"
+		},
+		"sectionLabels": {
+			"waterMonitoring": "Water Monitoring",
+			"airMonitoring": "Air Monitoring",
+			"waterMeter": "Water Meter"
 		}
+	},
+	"unit": {
+		"temperature": "°C",
+		"humidity": "%",
+		"pressure": "hPa",
+		"co2": "ppm",
+		"pm25": "µg/m³",
+		"pm10": "µg/m³",
+		"noise": "dB",
+		"waterFlow": "L/min",
+		"energyConsumption": "kWh"
 	}
 }

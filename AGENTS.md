@@ -33,6 +33,7 @@ Key Features
 - zod
 - recharts
 - motion
+- slugify
   Do not introduce new major libraries unless there is a strong reason.
 
 ---

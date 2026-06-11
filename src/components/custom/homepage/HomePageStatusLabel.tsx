@@ -12,8 +12,9 @@ const HomePageStatusLabel = () => {
 				const { color, labelKey } = METER_STATUS_CONFIG[status];
 				return (
 					<div
+						style={{ backgroundColor: color }}
 						key={status}
-						className={`${color} px-4 py-2 flex items-center justify-center text-white font-bold `}
+						className={`px-4 py-2 flex items-center justify-center text-white font-bold `}
 					>
 						<span className="text-base">{t(labelKey)}</span>
 					</div>

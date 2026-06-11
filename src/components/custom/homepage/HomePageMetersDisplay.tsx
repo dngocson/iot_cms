@@ -1,13 +1,14 @@
+import { motion } from "motion/react";
 import MeterStatusIndicator from "#/components/custom/common/MeterStatusIndicator";
 import type { MeterThreshold } from "#/types/meter";
 
 type HomePageMeter = {
-	/** Stable identifier for the meter. */
 	id: string;
-	/** Latest reading, or `undefined` when the meter is disconnected. */
 	current: number | undefined;
 	goodThreshold: MeterThreshold;
 	badThreshold: MeterThreshold;
+	name: string;
+	unit: string;
 };
 
 type HomePageMetersDisplayProps = {
@@ -20,26 +21,37 @@ const HomePageMetersDisplay = ({
 	value,
 }: HomePageMetersDisplayProps) => {
 	return (
-		<div className="flex flex-col gap-3">
-			<h2 className="text-lg font-semibold">{title}</h2>
-			<div className="flex flex-wrap gap-4">
-				{value.map((meter) => (
-					<div
+		<motion.div
+			className="flex flex-col gap-3 p-4 rounded-lg bg-muted"
+			initial={{ opacity: 0, y: 16 }}
+			animate={{ opacity: 1, y: 0 }}
+			transition={{ duration: 0.3 }}
+		>
+			<h2 className="text-2xl font-semibold">{title}</h2>
+
+			<div className="grid grid-cols-6 gap-4">
+				{value.map((meter, index) => (
+					<motion.div
 						key={meter.id}
-						className="flex items-center gap-2 rounded-lg border px-3 py-2"
+						layout
+						initial={{ opacity: 0, scale: 0.9 }}
+						animate={{ opacity: 1, scale: 1 }}
+						transition={{
+							duration: 0.25,
+							delay: index * 0.05,
+						}}
 					>
-						<span className="font-medium tabular-nums">
-							{meter.current ?? "--"}
-						</span>
 						<MeterStatusIndicator
 							value={meter.current}
 							goodThreshold={meter.goodThreshold}
 							badThreshold={meter.badThreshold}
+							name={meter.name}
+							unit={meter.unit}
 						/>
-					</div>
+					</motion.div>
 				))}
 			</div>
-		</div>
+		</motion.div>
 	);
 };
 
