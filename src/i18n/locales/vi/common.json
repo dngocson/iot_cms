@@ -20,10 +20,10 @@
 	"language": {
 		"label": "Ngôn ngữ"
 	},
-
 	"header": {
 		"nav": {
-			"dashboard": "Bảng điều khiển",
+			"dashboard": "Tổng quan",
+			"aboutUs": "Về chúng tôi",
 			"alerts": "Cảnh báo",
 			"home": "Trang chủ",
 			"settings": "Cài đặt",
@@ -33,6 +33,13 @@
 		},
 		"waterMeter": "Đồng hộ nước",
 		"greeting": "Rất vui được gặp bạn"
+	},
+	"footer": {
+		"copyright": "Bản quyền © 2023 IoT CMS. Tất cả quyền được bảo lưu.",
+		"companyName": "CONG TY THHH MOT THANH VIEN PHAT TRIEN PHAN MEM QUANG TRUNG",
+		"department": "Khoa Kỹ thuật",
+		"address": "Địa chỉ: 123 Đường ABC, Phường XYZ, Quận 1, TP.HCM",
+		"hotline": "Đường dây nóng: 0123456789"
 	},
 	"home": {
 		"overview": "Tổng quan",
@@ -47,6 +54,12 @@
 			"waterMonitoring": "Quan trắc nước",
 			"airMonitoring": "Quan trắc không khí",
 			"waterMeter": "Đồng hộ nước"
+		},
+		"userModal": {
+			"label": "Tài khoản",
+			"accountSettings": "Cài đặt",
+			"logout": "Đăng xuất",
+			"accountManagement": "Quản lý tài khoản"
 		}
 	},
 	"unit": {

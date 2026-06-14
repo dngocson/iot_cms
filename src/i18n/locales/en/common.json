@@ -24,6 +24,7 @@
 	"header": {
 		"nav": {
 			"dashboard": "Dashboard",
+			"aboutUs": "About Us",
 			"alerts": "Alerts",
 			"home": "Home",
 			"settings": "Settings",
@@ -47,6 +48,12 @@
 			"waterMonitoring": "Water Monitoring",
 			"airMonitoring": "Air Monitoring",
 			"waterMeter": "Water Meter"
+		},
+		"userModal": {
+			"label": "Account",
+			"accountSettings": "Account Settings",
+			"logout": "Logout",
+			"accountManagement": "Account Management"
 		}
 	},
 	"unit": {

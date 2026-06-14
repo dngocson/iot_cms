@@ -20,7 +20,7 @@ const headerLinks = [
 	{
 		href: "/about-us",
 		icon: <TriangleAlert className="w-5 h-5" />,
-		translationKey: "nav.aboutUs",
+		translationKey: "header.nav.aboutUs",
 	},
 	{
 		href: "/water-monitoring",
