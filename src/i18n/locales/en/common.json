@@ -35,6 +35,10 @@
 	"language": {
 		"label": "Language"
 	},
+	"chart": {
+		"gaugeSummary": "{{label}}: {{value}} {{unit}}. {{status}}. Range {{min}} to {{max}}.",
+		"outOfRange": "Reading is out of range"
+	},
 
 	"header": {
 		"nav": {

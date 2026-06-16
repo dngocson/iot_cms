@@ -20,6 +20,10 @@
 	"language": {
 		"label": "Ngôn ngữ"
 	},
+	"chart": {
+		"gaugeSummary": "{{label}}: {{value}} {{unit}}. {{status}}. Phạm vi {{min}} đến {{max}}.",
+		"outOfRange": "Giá trị nằm ngoài phạm vi"
+	},
 	"header": {
 		"nav": {
 			"dashboard": "Tổng quan",
