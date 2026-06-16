@@ -7,12 +7,12 @@ export const Route = createFileRoute("/about-us/")({
 
 function RouteComponent() {
 	return (
-		<div>
-			<div className="w-100">
+		<div className="flex flex-col">
+			<div className="grid grid-cols-5">
 				<GaugeChart
 					label="COD"
 					unit="mg/l"
-					data={{ min: 0, max: 200, current: 80, lowLevel: 60, highLevel: 150 }}
+					data={{ min: 0, max: 200, current: 85, lowLevel: 20, highLevel: 140 }}
 				/>
 			</div>
 		</div>

@@ -1,5 +1,6 @@
 import { Cloud } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	Label,
@@ -25,7 +26,6 @@ import {
 import { type ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
 
-// 270° sweep with the gap at the bottom (matches the design).
 const START_ANGLE = 180;
 const END_ANGLE = 0;
 
@@ -35,25 +35,20 @@ const ZONE_COLOR = {
 	bad: METER_STATUS_CONFIG.bad.color,
 } as const;
 
-// Recharts v3 types these render props with internal shapes (e.g. `x` is
-// `string | number`). We compute with plain numbers, so cast the props at the
-// call sites rather than fighting the upstream types throughout.
+const ZONE_RING_THICKNESS = 3;
+const ZONE_RING_GAP = 1;
+const OUTER_RADIUS_PERCENT = 0.74;
+
 type AngleAxisTicks = ComponentProps<typeof PolarAngleAxis>["ticks"];
 type AngleAxisTick = ComponentProps<typeof PolarAngleAxis>["tick"];
 type LabelContent = ComponentProps<typeof Label>["content"];
 
 export interface GaugeChartProps {
-	/** Range + reading + threshold boundaries. */
 	data: GaugeData;
-	/** Metric name shown in the header, e.g. `"COD"`. */
 	label: string;
-	/** Unit appended in the header and shown under the value, e.g. `"mg/l"`. */
 	unit?: string;
-	/** Leading header icon. Defaults to a cloud, matching the reference design. */
 	icon?: ReactNode;
-	/** Decimal places for the center value. Default `1`. */
 	precision?: number;
-	/** Number of labeled segments across the range. Default `5`. */
 	segments?: number;
 	className?: string;
 }
@@ -61,16 +56,26 @@ export interface GaugeChartProps {
 const formatTickLabel = (value: number) =>
 	Number.isInteger(value) ? `${value}` : value.toFixed(1);
 
-/**
- * Reusable radial gauge built on shadcn's `ChartContainer` + Recharts.
- *
- * Renders the full `min`–`max` range as a 270° dial: a muted track, a fill arc
- * from `min` to the (clamped) `current` coloured by its zone, a zone-coloured
- * tick scale, a marker at the current position, and the live value at the
- * centre. Safe / warning / critical zones are derived from `lowLevel` /
- * `highLevel`. Fully responsive (scales with its container) and theme-aware
- * (track + text use design tokens).
- */
+const valueToAngle = (value: number, min: number, max: number): number => {
+	const t = (value - min) / (max - min);
+	return START_ANGLE + t * (END_ANGLE - START_ANGLE); // giữ nguyên
+};
+const describeArc = (
+	cx: number,
+	cy: number,
+	r: number,
+	startAngle: number,
+	endAngle: number,
+): string => {
+	const toRad = (deg: number) => (deg * Math.PI) / 180;
+	const x1 = cx + r * Math.cos(toRad(startAngle));
+	const x2 = cx + r * Math.cos(toRad(endAngle));
+	const y1 = cy - r * Math.sin(toRad(startAngle));
+	const y2 = cy - r * Math.sin(toRad(endAngle));
+	const largeArc = Math.abs(startAngle - endAngle) > 180 ? 1 : 0;
+	const sweep = endAngle < startAngle ? 1 : 0; // đổi > thành
+	return `M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} ${sweep} ${x2} ${y2}`;
+};
 export function GaugeChart({
 	data,
 	label,
@@ -81,6 +86,20 @@ export function GaugeChart({
 	className,
 }: GaugeChartProps) {
 	const { t } = useTranslation();
+
+	const containerRef = useRef<HTMLDivElement>(null);
+	const [chartSize, setChartSize] = useState({ width: 0, height: 0 });
+
+	useEffect(() => {
+		const el = containerRef.current;
+		if (!el) return;
+		const ro = new ResizeObserver(([entry]) => {
+			const { width, height } = entry.contentRect;
+			setChartSize({ width, height });
+		});
+		ro.observe(el);
+		return () => ro.disconnect();
+	}, []);
 
 	const {
 		min,
@@ -96,17 +115,20 @@ export function GaugeChart({
 	const hasCurrent = current !== null;
 	const fillColor =
 		status === "noConnection" ? "var(--muted-foreground)" : ZONE_COLOR[status];
-
+	const markerEpsilon = (max - min) * 1e-6;
 	const ticks = generateGaugeTicks(min, max, lowLevel, highLevel, segments);
 	const majorValues = new Set(
 		ticks.filter((tick) => tick.major).map((tick) => tick.value),
 	);
 	const tickValues = ticks.map((tick) => tick.value);
-	// Ensure the marker position is rendered even if it isn't a scale tick.
-	const axisTicks = hasCurrent
-		? Array.from(new Set([...tickValues, clampedCurrent]))
-		: tickValues;
-	const markerEpsilon = (max - min) * 1e-6;
+	const currentTickExists =
+		hasCurrent &&
+		tickValues.some((tick) => Math.abs(tick - clampedCurrent) <= markerEpsilon);
+
+	const axisTicks =
+		hasCurrent && !currentTickExists
+			? [...tickValues, clampedCurrent]
+			: tickValues;
 
 	const chartConfig = {
 		value: { label, color: fillColor },
@@ -129,8 +151,18 @@ export function GaugeChart({
 			})
 		: `${label}: ${statusLabel}.`;
 
-	// Draws a tick mark (+ label for majors) or the current-value marker, laid
-	// out radially from the chart centre supplied by the polar axis.
+	const minDim = Math.min(chartSize.width, chartSize.height);
+	const cx = chartSize.width / 2;
+	const cy = chartSize.height / 2;
+	const outerRadiusPx = (minDim / 2) * OUTER_RADIUS_PERCENT;
+	const ringR = outerRadiusPx + ZONE_RING_GAP + ZONE_RING_THICKNESS / 2;
+
+	const zones: Array<{ from: number; to: number; color: string }> = [
+		{ from: min, to: lowLevel, color: ZONE_COLOR.good },
+		{ from: lowLevel, to: highLevel, color: ZONE_COLOR.warning },
+		{ from: highLevel, to: max, color: ZONE_COLOR.bad },
+	];
+
 	const renderTick = (props: {
 		x?: number;
 		y?: number;
@@ -146,7 +178,11 @@ export function GaugeChart({
 		const ux = dx / r;
 		const uy = dy / r;
 
-		if (hasCurrent && Math.abs(value - clampedCurrent) <= markerEpsilon) {
+		const isMajor = majorValues.has(value);
+		const isCurrentMarker =
+			hasCurrent && Math.abs(value - clampedCurrent) <= markerEpsilon;
+
+		if (!isMajor && isCurrentMarker) {
 			const markerRadius = Math.max(4, r * 0.05);
 			return (
 				<g key={`marker-${value}`}>
@@ -162,10 +198,10 @@ export function GaugeChart({
 			);
 		}
 
-		const isMajor = majorValues.has(value);
 		const color = ZONE_COLOR[getZoneStatus(value, lowLevel, highLevel)];
 		const tickLength = isMajor ? r * 0.07 : r * 0.04;
 		const labelRadius = r + tickLength + r * 0.12;
+		const markerRadius = Math.max(4, r * 0.05);
 
 		return (
 			<g key={`tick-${value}`}>
@@ -191,6 +227,16 @@ export function GaugeChart({
 					>
 						{formatTickLabel(value)}
 					</text>
+				) : null}
+				{isCurrentMarker ? (
+					<circle
+						cx={cx + ux * r}
+						cy={cy + uy * r}
+						r={markerRadius}
+						fill={fillColor}
+						stroke="var(--background)"
+						strokeWidth={2}
+					/>
 				) : null}
 			</g>
 		);
@@ -249,45 +295,74 @@ export function GaugeChart({
 				</CardAction>
 			</CardHeader>
 			<CardContent>
-				<ChartContainer
-					config={chartConfig}
-					role="img"
-					aria-label={ariaLabel}
-					className="mx-auto aspect-square w-full max-w-70"
-				>
-					<RadialBarChart
-						data={[{ value: hasCurrent ? clampedCurrent : min }]}
-						startAngle={START_ANGLE}
-						endAngle={END_ANGLE}
-						innerRadius="52%"
-						outerRadius="72%"
-						margin={{ top: 16, right: 16, bottom: 16, left: 16 }}
+				<div ref={containerRef} className="relative aspect-square w-full">
+					<ChartContainer
+						config={chartConfig}
+						role="img"
+						aria-label={ariaLabel}
+						className="aspect-square w-full"
 					>
-						<PolarAngleAxis
-							type="number"
-							domain={[min, max]}
-							ticks={axisTicks as unknown as AngleAxisTicks}
-							tick={renderTick as unknown as AngleAxisTick}
-							tickLine={false}
-							axisLine={false}
-						/>
-						<RadialBar
-							dataKey="value"
-							background
-							cornerRadius={5}
-							fill="var(--color-value)"
-							isAnimationActive={false}
-						/>
-						<PolarRadiusAxis tick={false} axisLine={false}>
-							<Label content={renderCenter as unknown as LabelContent} />
-						</PolarRadiusAxis>
-					</RadialBarChart>
-				</ChartContainer>
+						<RadialBarChart
+							data={[{ value: hasCurrent ? clampedCurrent : min }]}
+							startAngle={START_ANGLE}
+							endAngle={END_ANGLE}
+							innerRadius="60%"
+							outerRadius="72%"
+							margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
+						>
+							<PolarAngleAxis
+								type="number"
+								domain={[min, max]}
+								ticks={axisTicks as unknown as AngleAxisTicks}
+								tick={renderTick as unknown as AngleAxisTick}
+								tickLine={false}
+								axisLine={false}
+							/>
+							<RadialBar
+								dataKey="value"
+								background
+								cornerRadius={5}
+								fill="var(--color-value)"
+								isAnimationActive={false}
+							/>
+							<PolarRadiusAxis tick={false} axisLine={false}>
+								<Label content={renderCenter as unknown as LabelContent} />
+							</PolarRadiusAxis>
+						</RadialBarChart>
+					</ChartContainer>
+
+					{/* Zone ring overlay */}
+					{chartSize.width > 0 && (
+						<svg
+							className="pointer-events-none absolute inset-0"
+							width={chartSize.width}
+							height={chartSize.height}
+						>
+							<title>Gauge zone overlay</title>
+							{zones.map(({ from, to, color }) => (
+								<path
+									key={`zone-ring-${from}`}
+									d={describeArc(
+										cx,
+										cy,
+										ringR,
+										valueToAngle(from, min, max),
+										valueToAngle(to, min, max),
+									)}
+									fill="none"
+									stroke={color}
+									strokeWidth={ZONE_RING_THICKNESS}
+									strokeLinecap="butt"
+									opacity={0.75}
+								/>
+							))}
+						</svg>
+					)}
+				</div>
+
 				{outOfRange ? (
 					<p className="mt-1 text-center text-xs text-muted-foreground">
-						{t("chart.outOfRange", {
-							defaultValue: "Reading is out of range",
-						})}
+						{t("chart.outOfRange", { defaultValue: "Reading is out of range" })}
 					</p>
 				) : null}
 				<p className="sr-only">{ariaLabel}</p>
