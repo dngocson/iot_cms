@@ -8,6 +8,22 @@
   </head>
   <body>
     <div id="app"></div>
+    <script>
+      // Apply the persisted theme before paint to avoid a flash of the wrong
+      // theme. Mirrors the resolution logic in store/settings-store + use-theme.
+      (() => {
+        try {
+          const stored = localStorage.getItem("iot-cms-settings");
+          const saved = stored ? JSON.parse(stored).state.theme : null;
+          const prefersDark = window.matchMedia(
+            "(prefers-color-scheme: dark)",
+          ).matches;
+          const isDark =
+            saved === "dark" || ((!saved || saved === "system") && prefersDark);
+          document.documentElement.classList.toggle("dark", isDark);
+        } catch {}
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

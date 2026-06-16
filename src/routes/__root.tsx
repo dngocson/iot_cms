@@ -3,7 +3,8 @@ import type { QueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 
-import { Header } from "#/components/custom/common/Header";
+import { Header } from "#/components/layout/Header";
+import { useTheme } from "#/hooks/use-theme";
 import "../styles.css";
 
 export interface RouterContext {
@@ -15,6 +16,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 });
 
 function RootComponent() {
+	useTheme();
+
 	return (
 		<>
 			<Header />

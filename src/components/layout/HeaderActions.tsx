@@ -1,4 +1,4 @@
-import { Globe, Settings } from "lucide-react";
+import { Globe } from "lucide-react";
 import { motion, type Variants } from "motion/react";
 import { memo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -15,6 +15,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ThemeToggle } from "./theme-toggle";
 
 const containerVariants: Variants = {
 	hidden: { opacity: 0 },
@@ -48,7 +49,7 @@ const UserMenu = memo(function UserMenu() {
 			variants={itemVariants}
 			className="flex items-center gap-2 ml-2"
 		>
-			<div className="text-right">
+			<div className="hidden text-right md:block">
 				<p className="text-xs text-amber-700">{t("header.greeting")}</p>
 				<p className="text-sm font-semibold text-amber-900">Robert</p>
 			</div>
@@ -103,13 +104,13 @@ export const HeaderActions = memo(function HeaderActions() {
 			variants={containerVariants}
 			initial="hidden"
 			animate="visible"
-			className="flex items-center gap-4 ml-12"
+			className="flex items-center gap-2 md:gap-4 ml-auto lg:ml-12"
 		>
 			<motion.div
 				variants={containerVariants}
 				initial="hidden"
 				animate="visible"
-				className="flex items-center gap-3"
+				className="flex items-center gap-2 md:gap-3"
 			>
 				<DropdownMenu open={langOpen} onOpenChange={setLangOpen}>
 					<DropdownMenuTrigger
@@ -140,13 +141,7 @@ export const HeaderActions = memo(function HeaderActions() {
 					</DropdownMenuContent>
 				</DropdownMenu>
 
-				<motion.button
-					variants={itemVariants}
-					className="p-2.5 rounded-full border-2 border-amber-300 hover:bg-amber-50 transition-colors duration-200 text-amber-700"
-					title="Account"
-				>
-					<Settings className="w-5 h-5" />
-				</motion.button>
+				<ThemeToggle />
 			</motion.div>
 
 			<UserMenu />

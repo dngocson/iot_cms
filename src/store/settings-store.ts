@@ -1,15 +1,17 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { DEFAULT_LANGUAGE, type LanguageCode } from "#/constants/languages";
+import type { LanguageCode } from "#/constants/languages";
 import i18n from "#/i18n";
 
 export type Theme = "light" | "dark" | "system";
+export type Language = "en" | "vi";
 
 interface SettingsState {
 	language: LanguageCode;
 	theme: Theme;
 	setLanguage: (language: LanguageCode) => void;
 	setTheme: (theme: Theme) => void;
+	toggleTheme: () => void;
 }
 
 /**
@@ -19,16 +21,31 @@ interface SettingsState {
  * be stored here — use TanStack Query for that. Persisted to localStorage so
  * preferences survive reloads.
  */
+
+function getInitialTheme(): Theme {
+	if (typeof window === "undefined") return "light";
+	return window.matchMedia("(prefers-color-scheme: dark)").matches
+		? "dark"
+		: "light";
+}
+
+function getInitialLanguage(): Language {
+	if (typeof navigator === "undefined") return "en";
+	return navigator.language.toLowerCase().startsWith("vi") ? "vi" : "en";
+}
+
 export const useSettingsStore = create<SettingsState>()(
 	persist(
 		(set) => ({
-			language: DEFAULT_LANGUAGE,
-			theme: "system",
+			theme: getInitialTheme(),
+			language: getInitialLanguage(),
 			setLanguage: (language) => {
 				i18n.changeLanguage(language);
 				set({ language });
 			},
 			setTheme: (theme) => set({ theme }),
+			toggleTheme: () =>
+				set((s) => ({ theme: s.theme === "dark" ? "light" : "dark" })),
 		}),
 		{
 			name: "iot-cms-settings",

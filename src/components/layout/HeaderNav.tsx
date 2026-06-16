@@ -11,7 +11,7 @@ import {
 import { AnimatePresence, motion, type Variants } from "motion/react";
 import { useTranslation } from "react-i18next";
 
-const headerLinks = [
+export const headerLinks = [
 	{
 		href: "/",
 		icon: <LayoutGrid className="w-5 h-5" />,
@@ -78,7 +78,7 @@ export function HeaderNav() {
 			variants={containerVariants}
 			initial="hidden"
 			animate="visible"
-			className="flex items-center gap-3 ml-auto"
+			className="hidden lg:flex items-center gap-3 ml-auto"
 		>
 			{headerLinks.map((link) => {
 				const isActive = location.pathname === link.href;

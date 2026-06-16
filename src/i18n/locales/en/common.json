@@ -3,6 +3,21 @@
 		"name": "IoT CMS",
 		"tagline": "Monitor sensors, devices, and alerts in real time"
 	},
+	"common": {
+		"present": "Present",
+		"downloadCv": "Download CV",
+		"getInTouch": "Get in touch",
+		"contactMe": "Contact me",
+		"viewExperience": "View experience",
+		"copy": "Copy",
+		"copied": "Copied",
+		"language": "Language",
+		"theme": "Theme",
+		"lightMode": "Light mode",
+		"darkMode": "Dark mode",
+		"backToTop": "Back to top",
+		"menu": "Menu"
+	},
 	"actions": {
 		"save": "Save",
 		"cancel": "Cancel",
