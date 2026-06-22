@@ -46,8 +46,7 @@ export interface AuthState {
 	user: User | null;
 	token: string | null;
 	isAuthenticated: boolean;
-	/** Persist a successful login (cookie + in-memory token + state). */
+	isLoading: boolean;
 	login: (response: LoginResponse) => void;
-	/** Clear all auth traces (cookie + in-memory token + state). */
 	logout: () => void;
 }

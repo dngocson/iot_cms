@@ -17,41 +17,66 @@ export interface RouterContext {
 	queryClient: QueryClient;
 }
 
-/** Route prefix that is reachable without authentication. */
-const PUBLIC_PREFIX = "/login";
+/**
+ * Public routes that do NOT require authentication.
+ * Easier to extend than a single prefix string.
+ */
+const PUBLIC_ROUTES = ["/login"];
+
+/**
+ * Check if a route is public
+ */
+function isPublicRoute(pathname: string) {
+	return PUBLIC_ROUTES.some((path) => pathname.startsWith(path));
+}
 
 export const Route = createRootRouteWithContext<RouterContext>()({
-	/**
-	 * Global route guard. Every route inherits this, so unauthenticated users
-	 * are redirected to the login page from anywhere in the app. The login page
-	 * itself is exempt (and handles redirecting already-authenticated users).
-	 */
 	beforeLoad: ({ location }) => {
-		const isAuthenticated = useAuthStore.getState().isAuthenticated;
-		const isPublic = location.pathname.startsWith(PUBLIC_PREFIX);
+		const {
+			isAuthenticated,
+			isLoading, // 👈 important: prevent premature redirect
+		} = useAuthStore.getState();
 
-		if (!isAuthenticated && !isPublic) {
+		const publicRoute = isPublicRoute(location.pathname);
+
+		// ⛔ Wait until auth is initialized (avoid flicker redirect)
+		if (isLoading) return;
+
+		// 🔒 Protect private routes
+		if (!isAuthenticated && !publicRoute) {
 			throw redirect({
 				to: "/login",
-				search: { redirect: location.href },
+				search: {
+					redirect: location.pathname + location.search, // safer than href
+				},
+			});
+		}
+
+		// Optional: prevent authenticated users from visiting login
+		if (isAuthenticated && publicRoute) {
+			throw redirect({
+				to: "/",
 			});
 		}
 	},
+
 	component: RootComponent,
 });
 
 function RootComponent() {
 	useTheme();
 
-	// Hide the app chrome on public pages (e.g. login).
 	const hideChrome = useRouterState({
-		select: (state) => state.location.pathname.startsWith(PUBLIC_PREFIX),
+		select: (state) => isPublicRoute(state.location.pathname),
 	});
 
 	return (
 		<>
 			{!hideChrome && <Header />}
+
 			<Outlet />
+
+			{/* Devtools only */}
 			<TanStackDevtools
 				config={{
 					position: "bottom-right",

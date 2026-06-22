@@ -81,6 +81,21 @@
 			"unexpected": "Something went wrong. Please try again."
 		}
 	},
+	"records": {
+		"title": "Records",
+		"subtitle": "Sensor readings A1–A12 by date. Click a date to edit it.",
+		"columns": {
+			"date": "Date"
+		}
+	},
+	"table": {
+		"rowsPerPage": "Rows per page",
+		"pageInfo": "Page {{page}} of {{total}}",
+		"firstPage": "First page",
+		"previousPage": "Previous page",
+		"nextPage": "Next page",
+		"lastPage": "Last page"
+	},
 	"home": {
 		"overview": "Overview",
 		"overviewTime": "Updated at {{time}} - {{date}}",

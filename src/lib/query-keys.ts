@@ -17,4 +17,10 @@ export const queryKeys = {
 		details: () => [...queryKeys.devices.all, "detail"] as const,
 		detail: (id: string) => [...queryKeys.devices.details(), id] as const,
 	},
+	records: {
+		all: ["records"] as const,
+		lists: () => [...queryKeys.records.all, "list"] as const,
+		list: (params?: PaginationParams) =>
+			[...queryKeys.records.lists(), params ?? {}] as const,
+	},
 } as const;

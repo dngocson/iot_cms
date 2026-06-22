@@ -61,4 +61,5 @@ export const useAuthStore = create<AuthState>((set) => ({
 		setAuthToken(null);
 		set({ user: null, token: null, isAuthenticated: false });
 	},
+	isLoading: false, // Optional: track if auth state is being initialized (e.g. checking cookie on app load)
 }));

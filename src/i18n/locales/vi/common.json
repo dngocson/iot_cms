@@ -72,6 +72,21 @@
 			"unexpected": "Đã xảy ra lỗi. Vui lòng thử lại."
 		}
 	},
+	"records": {
+		"title": "Bản ghi",
+		"subtitle": "Số liệu cảm biến A1–A12 theo ngày. Nhấp vào ngày để chỉnh sửa.",
+		"columns": {
+			"date": "Ngày"
+		}
+	},
+	"table": {
+		"rowsPerPage": "Số dòng mỗi trang",
+		"pageInfo": "Trang {{page}} / {{total}}",
+		"firstPage": "Trang đầu",
+		"previousPage": "Trang trước",
+		"nextPage": "Trang sau",
+		"lastPage": "Trang cuối"
+	},
 	"home": {
 		"overview": "Tổng quan",
 		"overviewTime": "Cập nhật lúc {{time}} - {{date}}",
