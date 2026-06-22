@@ -45,6 +45,33 @@
 		"address": "Địa chỉ: 123 Đường ABC, Phường XYZ, Quận 1, TP.HCM",
 		"hotline": "Đường dây nóng: 0123456789"
 	},
+	"login": {
+		"system": {
+			"title": "Hệ thống giám sát môi trường",
+			"subtitle": "QTSC Environment Monitoring System"
+		},
+		"company": {
+			"name": "CÔNG TY TNHH MỘT THÀNH VIÊN PHÁT TRIỂN CÔNG VIÊN PHẦN MỀM QUANG TRUNG",
+			"department": "Phòng Kỹ thuật Điện - Nước",
+			"address": "Tòa nhà QTSC Building 1, Khu Công viên phần mềm Quang Trung, P. Trung Mỹ Tây, TP.HCM, Việt Nam"
+		},
+		"form": {
+			"usernamePlaceholder": "Tên đăng nhập",
+			"passwordPlaceholder": "Mật khẩu",
+			"remember": "Ghi nhớ",
+			"forgotPassword": "Quên mật khẩu?",
+			"submit": "ĐĂNG NHẬP",
+			"submitting": "Đang đăng nhập…"
+		},
+		"validation": {
+			"usernameRequired": "Vui lòng nhập tên đăng nhập",
+			"passwordRequired": "Vui lòng nhập mật khẩu"
+		},
+		"errors": {
+			"invalidCredentials": "Tên đăng nhập hoặc mật khẩu không đúng",
+			"unexpected": "Đã xảy ra lỗi. Vui lòng thử lại."
+		}
+	},
 	"home": {
 		"overview": "Tổng quan",
 		"overviewTime": "Cập nhật lúc {{time}} - {{date}}",

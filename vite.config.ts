@@ -6,6 +6,7 @@ import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import path from "path";
 import { defineConfig } from "vite";
+import { assetsManager } from "./assetsManager.js";
 
 const config = defineConfig({
 	resolve: {
@@ -15,6 +16,7 @@ const config = defineConfig({
 		},
 	},
 	plugins: [
+		assetsManager(),
 		devtools(),
 		tailwindcss(),
 		tanstackRouter({ target: "react", autoCodeSplitting: true }),

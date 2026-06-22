@@ -1,8 +1,10 @@
+import { useNavigate } from "@tanstack/react-router";
 import { Globe } from "lucide-react";
 import { motion, type Variants } from "motion/react";
 import { memo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LANGUAGES, type LanguageCode } from "#/constants/languages";
+import { useAuth } from "#/hooks/use-auth";
 import { useSettingsStore } from "#/store/settings-store";
 import {
 	DropdownMenu,
@@ -43,7 +45,19 @@ const itemVariants: Variants = {
 
 const UserMenu = memo(function UserMenu() {
 	const { t } = useTranslation();
+	const navigate = useNavigate();
+	const { user, logout } = useAuth();
 	const [userModalOpen, setUserModalOpen] = useState(false);
+
+	const handleLogout = () => {
+		setUserModalOpen(false);
+		logout();
+		navigate({ to: "/login" });
+	};
+
+	const displayName = user?.name ?? "";
+	const initial = displayName.charAt(0).toUpperCase() || "U";
+
 	return (
 		<motion.div
 			variants={itemVariants}
@@ -51,7 +65,7 @@ const UserMenu = memo(function UserMenu() {
 		>
 			<div className="hidden text-right md:block">
 				<p className="text-xs text-amber-700">{t("header.greeting")}</p>
-				<p className="text-sm font-semibold text-amber-900">Robert</p>
+				<p className="text-sm font-semibold text-amber-900">{displayName}</p>
 			</div>
 
 			<DropdownMenu open={userModalOpen} onOpenChange={setUserModalOpen}>
@@ -63,7 +77,7 @@ const UserMenu = memo(function UserMenu() {
 							transition={{ delay: 0.3, duration: 0.3 }}
 							className="w-10 h-10 rounded-full bg-linear-to-br from-blue-300 to-purple-400 flex items-center justify-center text-white font-bold shadow-md"
 						>
-							R
+							{initial}
 						</motion.button>
 					}
 				/>
@@ -81,7 +95,9 @@ const UserMenu = memo(function UserMenu() {
 						{t("home.userModal.accountManagement")}
 					</DropdownMenuItem>
 					<DropdownMenuSeparator />
-					<DropdownMenuItem>{t("home.userModal.logout")}</DropdownMenuItem>
+					<DropdownMenuItem onClick={handleLogout}>
+						{t("home.userModal.logout")}
+					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
 		</motion.div>

@@ -14,6 +14,7 @@ import { Route as WaterMonitoringIndexRouteImport } from './routes/water-monitor
 import { Route as WaterMeterIndexRouteImport } from './routes/water-meter/index'
 import { Route as WarningLogsIndexRouteImport } from './routes/warning-logs/index'
 import { Route as RecordsIndexRouteImport } from './routes/records/index'
+import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as AirMonitoringIndexRouteImport } from './routes/air-monitoring/index'
 import { Route as AboutUsIndexRouteImport } from './routes/about-us/index'
 
@@ -42,6 +43,11 @@ const RecordsIndexRoute = RecordsIndexRouteImport.update({
   path: '/records/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginIndexRoute = LoginIndexRouteImport.update({
+  id: '/login/',
+  path: '/login/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AirMonitoringIndexRoute = AirMonitoringIndexRouteImport.update({
   id: '/air-monitoring/',
   path: '/air-monitoring/',
@@ -57,6 +63,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about-us/': typeof AboutUsIndexRoute
   '/air-monitoring/': typeof AirMonitoringIndexRoute
+  '/login/': typeof LoginIndexRoute
   '/records/': typeof RecordsIndexRoute
   '/warning-logs/': typeof WarningLogsIndexRoute
   '/water-meter/': typeof WaterMeterIndexRoute
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about-us': typeof AboutUsIndexRoute
   '/air-monitoring': typeof AirMonitoringIndexRoute
+  '/login': typeof LoginIndexRoute
   '/records': typeof RecordsIndexRoute
   '/warning-logs': typeof WarningLogsIndexRoute
   '/water-meter': typeof WaterMeterIndexRoute
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about-us/': typeof AboutUsIndexRoute
   '/air-monitoring/': typeof AirMonitoringIndexRoute
+  '/login/': typeof LoginIndexRoute
   '/records/': typeof RecordsIndexRoute
   '/warning-logs/': typeof WarningLogsIndexRoute
   '/water-meter/': typeof WaterMeterIndexRoute
@@ -87,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about-us/'
     | '/air-monitoring/'
+    | '/login/'
     | '/records/'
     | '/warning-logs/'
     | '/water-meter/'
@@ -96,6 +106,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about-us'
     | '/air-monitoring'
+    | '/login'
     | '/records'
     | '/warning-logs'
     | '/water-meter'
@@ -105,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about-us/'
     | '/air-monitoring/'
+    | '/login/'
     | '/records/'
     | '/warning-logs/'
     | '/water-meter/'
@@ -115,6 +127,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutUsIndexRoute: typeof AboutUsIndexRoute
   AirMonitoringIndexRoute: typeof AirMonitoringIndexRoute
+  LoginIndexRoute: typeof LoginIndexRoute
   RecordsIndexRoute: typeof RecordsIndexRoute
   WarningLogsIndexRoute: typeof WarningLogsIndexRoute
   WaterMeterIndexRoute: typeof WaterMeterIndexRoute
@@ -158,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RecordsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login/': {
+      id: '/login/'
+      path: '/login'
+      fullPath: '/login/'
+      preLoaderRoute: typeof LoginIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/air-monitoring/': {
       id: '/air-monitoring/'
       path: '/air-monitoring'
@@ -179,6 +199,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutUsIndexRoute: AboutUsIndexRoute,
   AirMonitoringIndexRoute: AirMonitoringIndexRoute,
+  LoginIndexRoute: LoginIndexRoute,
   RecordsIndexRoute: RecordsIndexRoute,
   WarningLogsIndexRoute: WarningLogsIndexRoute,
   WaterMeterIndexRoute: WaterMeterIndexRoute,

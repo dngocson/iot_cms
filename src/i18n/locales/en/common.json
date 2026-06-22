@@ -54,6 +54,33 @@
 		"waterMeter": "Water Meter",
 		"greeting": "Glad to see you"
 	},
+	"login": {
+		"system": {
+			"title": "Environment Monitoring System",
+			"subtitle": "QTSC Environment Monitoring System"
+		},
+		"company": {
+			"name": "QUANG TRUNG SOFTWARE CITY DEVELOPMENT COMPANY LIMITED",
+			"department": "Electrical - Water Engineering Department",
+			"address": "QTSC Building 1, Quang Trung Software City, Trung My Tay Ward, Ho Chi Minh City, Vietnam"
+		},
+		"form": {
+			"usernamePlaceholder": "Username",
+			"passwordPlaceholder": "Password",
+			"remember": "Remember me",
+			"forgotPassword": "Forgot password?",
+			"submit": "SIGN IN",
+			"submitting": "Signing in…"
+		},
+		"validation": {
+			"usernameRequired": "Please enter your username",
+			"passwordRequired": "Please enter your password"
+		},
+		"errors": {
+			"invalidCredentials": "Invalid username or password",
+			"unexpected": "Something went wrong. Please try again."
+		}
+	},
 	"home": {
 		"overview": "Overview",
 		"overviewTime": "Updated at {{time}} - {{date}}",
