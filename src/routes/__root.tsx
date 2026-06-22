@@ -32,27 +32,39 @@ function isPublicRoute(pathname: string) {
 
 export const Route = createRootRouteWithContext<RouterContext>()({
 	beforeLoad: ({ location }) => {
-		const {
-			isAuthenticated,
-			isLoading, // 👈 important: prevent premature redirect
-		} = useAuthStore.getState();
+		const { isAuthenticated, isLoading } = useAuthStore.getState();
 
 		const publicRoute = isPublicRoute(location.pathname);
 
-		// ⛔ Wait until auth is initialized (avoid flicker redirect)
+		// Wait until auth is initialized
 		if (isLoading) return;
 
-		// 🔒 Protect private routes
+		// Protect private routes
 		if (!isAuthenticated && !publicRoute) {
+			const searchString = new URLSearchParams(
+				Object.entries(location.search ?? {}).reduce(
+					(acc, [key, value]) => {
+						if (value != null) {
+							acc[key] = String(value);
+						}
+						return acc;
+					},
+					{} as Record<string, string>,
+				),
+			).toString();
+
+			const redirectUrl =
+				location.pathname + (searchString ? `?${searchString}` : "");
+
 			throw redirect({
 				to: "/login",
 				search: {
-					redirect: location.pathname + location.search, // safer than href
+					redirect: redirectUrl,
 				},
 			});
 		}
 
-		// Optional: prevent authenticated users from visiting login
+		// Prevent authenticated users from visiting login
 		if (isAuthenticated && publicRoute) {
 			throw redirect({
 				to: "/",

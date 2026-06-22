@@ -2,7 +2,6 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { TFunction } from "i18next";
 
 import { A_COLUMN_KEYS, type SensorRecord } from "#/types/record";
-import { EditableDateCell } from "./EditableDateCell";
 import { SortableHeader } from "./SortableHeader";
 
 /**
@@ -21,12 +20,14 @@ export function createRecordColumns(
 		header: ({ column }) => (
 			<SortableHeader column={column} label={t("records.columns.date")} />
 		),
-		cell: ({ row }) => (
-			<EditableDateCell
-				rowId={row.original.id}
-				isoDate={row.original.date}
-				onChange={onUpdateDate}
-			/>
+
+		cell: ({ row, getValue }) => (
+			// <EditableDateCell
+			// 	rowId={row.original.id}
+			// 	isoDate={row.original.date}
+			// 	onChange={onUpdateDate}
+			// />
+			<span className="tabular-nums">{getValue<string>()}</span>
 		),
 		// ISO strings sort chronologically; compare explicitly for clarity.
 		sortingFn: (a, b) => a.original.date.localeCompare(b.original.date),

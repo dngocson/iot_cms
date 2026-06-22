@@ -15,7 +15,6 @@ function RecordsPage() {
 	const { t } = useTranslation();
 	const { data, isLoading, isError, refetch } = useTableData();
 	const { mutate } = useUpdateRecordDate();
-
 	const handleUpdateDate = useCallback(
 		(id: string, isoDate: string) => mutate({ id, isoDate }),
 		[mutate],
