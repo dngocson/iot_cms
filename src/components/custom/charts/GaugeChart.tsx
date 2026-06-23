@@ -323,7 +323,7 @@ export function GaugeChart({
 								background
 								cornerRadius={5}
 								fill="var(--color-value)"
-								isAnimationActive={false}
+								isAnimationActive={true}
 							/>
 							<PolarRadiusAxis tick={false} axisLine={false}>
 								<Label content={renderCenter as unknown as LabelContent} />

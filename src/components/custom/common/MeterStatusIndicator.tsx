@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import { getMeterStatus } from "#/helper/meter-status";
 import { cn } from "#/lib/utils";
 import type { MeterThreshold } from "#/types/meter";

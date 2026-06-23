@@ -75,7 +75,7 @@ export function WaterMeterAlertStats({ data }: WaterMeterAlertStatsProps) {
 								<p className="text-xs text-shadow-destructive">
 									{t("waterMeter.alertStats.metersOverThreshold")}
 								</p>
-								<p className="mt-0.5 text-2xl font-bold">
+								<p className="mt-0.5 text-2xl font-bold ">
 									{data.metersOverThreshold}{" "}
 									<span className="text-shadow-destructive">/</span>{" "}
 									{data.totalMeters}
@@ -99,7 +99,7 @@ export function WaterMeterAlertStats({ data }: WaterMeterAlertStatsProps) {
 								style={{ width: `${item.percentage}%` }}
 							/>
 						</div>
-						<span className="w-28 shrink-0 text-right text-sm text-shadow-destructive">
+						<span className="w-28 shrink-0 text-right text-sm text-destructive">
 							{item.count} ({item.percentage.toFixed(1)}%)
 						</span>
 					</div>

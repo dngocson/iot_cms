@@ -1,3 +1,4 @@
+import type { Resource } from "i18next";
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import {
@@ -17,7 +18,7 @@ export const defaultNS = "common";
 export const resources = {
 	en: { common: enCommon },
 	vi: { common: viCommon },
-} as const;
+} satisfies Resource;
 
 i18n.use(initReactI18next).init({
 	resources,

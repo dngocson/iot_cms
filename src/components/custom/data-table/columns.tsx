@@ -13,7 +13,7 @@ import { SortableHeader } from "./SortableHeader";
  */
 export function createRecordColumns(
 	t: TFunction,
-	onUpdateDate: (id: string, isoDate: string) => void,
+	_onUpdateDate: (id: string, isoDate: string) => void,
 ): ColumnDef<SensorRecord>[] {
 	const dateColumn: ColumnDef<SensorRecord> = {
 		accessorKey: "date",
@@ -21,7 +21,7 @@ export function createRecordColumns(
 			<SortableHeader column={column} label={t("records.columns.date")} />
 		),
 
-		cell: ({ row, getValue }) => (
+		cell: ({ getValue }) => (
 			// <EditableDateCell
 			// 	rowId={row.original.id}
 			// 	isoDate={row.original.date}
