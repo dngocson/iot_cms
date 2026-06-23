@@ -86,7 +86,9 @@ function RootComponent() {
 		<>
 			{!hideChrome && <Header />}
 
-			<Outlet />
+			<div className="mx-auto w-3/4 max-w-300">
+				<Outlet />
+			</div>
 
 			{/* Devtools only */}
 			<TanStackDevtools

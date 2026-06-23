@@ -117,6 +117,21 @@
 			"accountManagement": "Account Management"
 		}
 	},
+	"waterMeter": {
+		"alertStats": {
+			"title": "Water Meter Alert Statistics",
+			"totalAlerts": "Total Alerts",
+			"metersOverThreshold": "Meters Over Threshold"
+		}
+	},
+	"waterMonitoring": {
+		"chart": {
+			"title": "Water Monitoring Indicators Chart",
+			"filter": {
+				"all": "Indicators"
+			}
+		}
+	},
 	"unit": {
 		"temperature": "°C",
 		"humidity": "%",

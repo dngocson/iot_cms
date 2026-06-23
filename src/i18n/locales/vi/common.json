@@ -108,6 +108,21 @@
 			"accountManagement": "Quản lý tài khoản"
 		}
 	},
+	"waterMeter": {
+		"alertStats": {
+			"title": "Thống kê cảnh báo đồng hồ nước",
+			"totalAlerts": "Tổng cảnh báo",
+			"metersOverThreshold": "Đồng hồ vượt ngưỡng"
+		}
+	},
+	"waterMonitoring": {
+		"chart": {
+			"title": "Biểu đồ chỉ tiêu quan trắc nước",
+			"filter": {
+				"all": "Chỉ số"
+			}
+		}
+	},
 	"unit": {
 		"temperature": "°C",
 		"humidity": "%",
