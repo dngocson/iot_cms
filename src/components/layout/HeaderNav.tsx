@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from "@tanstack/react-router";
+import { useLocation, useNavigate, useRouter } from "@tanstack/react-router";
 import {
 	Archive,
 	CircleGauge,
@@ -69,6 +69,7 @@ export function HeaderNav() {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const { t } = useTranslation();
+	const router = useRouter();
 
 	// Optimistic active path. TanStack Router commits navigation inside
 	// `React.startTransition`, and `useLocation()` updates as part of that same
@@ -88,15 +89,22 @@ export function HeaderNav() {
 		setActivePath(location.pathname);
 	}, [location.pathname]);
 
-const handleNavigation = (href: string) => {
-    if (href === activePath) return;
+	useEffect(() => {
+		router.preloadRoute({
+			to: "/about-us",
+		});
+	}, [router]);
 
-    setActivePath(href);
+	const handleNavigation = (href: string) => {
+		if (href === activePath) return;
 
-    startTransition(() => {
-        navigate({ to: href });
-    });
-};
+		setActivePath(href);
+
+		startTransition(() => {
+			navigate({ to: href });
+		});
+	};
+
 	return (
 		<motion.div
 			variants={containerVariants}
@@ -111,6 +119,11 @@ const handleNavigation = (href: string) => {
 					<motion.button
 						key={link.href}
 						onClick={() => handleNavigation(link.href)}
+						onMouseEnter={() => {
+							router.preloadRoute({
+								to: link.href,
+							});
+						}}
 						animate={{
 							width: isActive ? "auto" : "40px",
 						}}
