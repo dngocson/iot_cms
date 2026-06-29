@@ -29,25 +29,25 @@ export function WaterMeterAlertStats({ data }: WaterMeterAlertStatsProps) {
 	const TrendIcon = isNegativeTrend ? TrendingDown : TrendingUp;
 
 	return (
-		<div className="space-y-5">
-			<h2 className="text-lg font-semibold text-background">
+		<div className="space-y-4 md:space-y-5">
+			<h2 className="text-base md:text-lg font-semibold text-background">
 				{t("waterMeter.alertStats.title")}
 			</h2>
 
-			{/* Stat cards */}
-			<div className="grid grid-cols-2 gap-3">
+			{/* Stat cards - Responsive: 1 col mobile, 2 cols tablet+ */}
+			<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 				<Card className="ring-1 ring-destructive/40">
-					<CardContent className="p-4">
-						<div className="flex items-start gap-3">
-							<div className="shrink-0 rounded-lg bg-destructive/10 p-2">
-								<AlertTriangle className="size-5 text-destructive" />
+					<CardContent className="p-3 md:p-4">
+						<div className="flex items-start gap-2 md:gap-3">
+							<div className="shrink-0 rounded-lg bg-destructive/10 p-1.5 md:p-2">
+								<AlertTriangle className="size-4 md:size-5 text-destructive" />
 							</div>
 							<div className="min-w-0">
 								<p className="text-xs text-shadow-destructive">
 									{t("waterMeter.alertStats.totalAlerts")}
 								</p>
-								<div className="mt-0.5 flex items-baseline gap-2">
-									<span className="text-2xl font-bold">{data.totalAlerts}</span>
+								<div className="mt-0.5 flex items-baseline gap-1.5 md:gap-2">
+									<span className="text-xl md:text-2xl font-bold">{data.totalAlerts}</span>
 									<span
 										className={cn(
 											"inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-xs font-medium",
@@ -66,16 +66,16 @@ export function WaterMeterAlertStats({ data }: WaterMeterAlertStatsProps) {
 				</Card>
 
 				<Card className="ring-1 ring-destructive/40">
-					<CardContent className="p-4">
-						<div className="flex items-start gap-3">
-							<div className="shrink-0 rounded-lg bg-destructive/10 p-2">
-								<Gauge className="size-5 text-shadow-destructive" />
+					<CardContent className="p-3 md:p-4">
+						<div className="flex items-start gap-2 md:gap-3">
+							<div className="shrink-0 rounded-lg bg-destructive/10 p-1.5 md:p-2">
+								<Gauge className="size-4 md:size-5 text-shadow-destructive" />
 							</div>
 							<div className="min-w-0">
 								<p className="text-xs text-shadow-destructive">
 									{t("waterMeter.alertStats.metersOverThreshold")}
 								</p>
-								<p className="mt-0.5 text-2xl font-bold ">
+								<p className="mt-0.5 text-xl md:text-2xl font-bold">
 									{data.metersOverThreshold}{" "}
 									<span className="text-shadow-destructive">/</span>{" "}
 									{data.totalMeters}
@@ -86,11 +86,11 @@ export function WaterMeterAlertStats({ data }: WaterMeterAlertStatsProps) {
 				</Card>
 			</div>
 
-			{/* Indicator rows */}
-			<div className="space-y-3">
+			{/* Indicator rows - Responsive layout */}
+			<div className="space-y-2 md:space-y-3">
 				{data.indicators.map((item) => (
-					<div key={item.id} className="flex items-center gap-3">
-						<span className="w-16 shrink-0 text-sm font-medium text-destructive">
+					<div key={item.id} className="flex items-center gap-2 md:gap-3">
+						<span className="w-12 md:w-16 shrink-0 text-xs md:text-sm font-medium text-destructive">
 							{item.name}
 						</span>
 						<div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
@@ -99,7 +99,7 @@ export function WaterMeterAlertStats({ data }: WaterMeterAlertStatsProps) {
 								style={{ width: `${item.percentage}%` }}
 							/>
 						</div>
-						<span className="w-28 shrink-0 text-right text-sm text-destructive">
+						<span className="w-20 md:w-28 shrink-0 text-right text-xs md:text-sm text-destructive">
 							{item.count} ({item.percentage.toFixed(1)}%)
 						</span>
 					</div>

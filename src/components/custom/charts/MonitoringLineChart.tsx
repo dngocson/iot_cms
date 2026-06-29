@@ -64,9 +64,9 @@ export function MonitoringLineChart({ data }: MonitoringLineChartProps) {
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>{t("waterMonitoring.chart.title")}</CardTitle>
+				<CardTitle className="text-base md:text-lg">{t("waterMonitoring.chart.title")}</CardTitle>
 			</CardHeader>
-			<CardContent className="space-y-4">
+			<CardContent className="space-y-3 md:space-y-4">
 				<div className="flex flex-wrap items-center justify-center gap-2">
 					{INDICATORS.map((indicator) => {
 						const isActive = activeKeys.has(indicator.key);
@@ -77,7 +77,7 @@ export function MonitoringLineChart({ data }: MonitoringLineChartProps) {
 								size="sm"
 								onClick={() => toggleKey(indicator.key)}
 								className={cn(
-									"gap-2 transition-opacity",
+									"gap-2 transition-opacity text-xs md:text-sm",
 									!isActive && "opacity-40",
 								)}
 								style={
@@ -101,7 +101,7 @@ export function MonitoringLineChart({ data }: MonitoringLineChartProps) {
 
 				<ChartContainer
 					config={CHART_CONFIG}
-					className="aspect-auto h-80 w-full"
+					className="aspect-auto h-64 md:h-80 w-full"
 				>
 					<ComposedChart
 						data={data}

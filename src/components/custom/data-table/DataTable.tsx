@@ -86,14 +86,15 @@ export function DataTable({ data, onUpdateDate }: DataTableProps) {
 	const pageCount = table.getPageCount();
 
 	return (
-		<div className="flex flex-col gap-4">
-			<div className="rounded-lg border">
+		<div className="flex flex-col gap-3 md:gap-4">
+			{/* Horizontal scroll wrapper for mobile */}
+			<div className="rounded-lg border overflow-x-auto">
 				<Table>
 					<TableHeader>
 						{table.getHeaderGroups().map((headerGroup) => (
 							<TableRow key={headerGroup.id}>
 								{headerGroup.headers.map((header) => (
-									<TableHead key={header.id}>
+									<TableHead key={header.id} className="whitespace-nowrap">
 										{header.isPlaceholder
 											? null
 											: flexRender(
@@ -110,7 +111,7 @@ export function DataTable({ data, onUpdateDate }: DataTableProps) {
 							table.getRowModel().rows.map((row) => (
 								<TableRow key={row.id}>
 									{row.getVisibleCells().map((cell) => (
-										<TableCell key={cell.id}>
+										<TableCell key={cell.id} className="whitespace-nowrap">
 											{flexRender(
 												cell.column.columnDef.cell,
 												cell.getContext(),
@@ -133,15 +134,17 @@ export function DataTable({ data, onUpdateDate }: DataTableProps) {
 				</Table>
 			</div>
 
+			{/* Responsive pagination */}
 			<Pagination>
-				<div className="flex items-center gap-2 text-sm text-muted-foreground">
-					<span>{t("table.rowsPerPage")}</span>
+				<div className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm text-muted-foreground">
+					<span className="hidden sm:inline">{t("table.rowsPerPage")}</span>
 					{PAGE_SIZE_OPTIONS.map((size) => (
 						<Button
 							key={size}
 							variant={pagination.pageSize === size ? "secondary" : "ghost"}
 							size="sm"
 							onClick={() => table.setPageSize(size)}
+							className="h-8 px-2 md:px-3"
 						>
 							{size}
 						</Button>
@@ -150,7 +153,7 @@ export function DataTable({ data, onUpdateDate }: DataTableProps) {
 
 				<PaginationContent>
 					<PaginationItem>
-						<span className="px-2 text-sm text-muted-foreground">
+						<span className="px-1 md:px-2 text-xs md:text-sm text-muted-foreground">
 							{t("table.pageInfo", {
 								page: pagination.pageIndex + 1,
 								total: Math.max(pageCount, 1),
@@ -164,8 +167,9 @@ export function DataTable({ data, onUpdateDate }: DataTableProps) {
 							aria-label={t("table.firstPage")}
 							onClick={() => table.firstPage()}
 							disabled={!table.getCanPreviousPage()}
+							className="h-8 w-8"
 						>
-							<ChevronsLeft />
+							<ChevronsLeft className="h-4 w-4" />
 						</Button>
 					</PaginationItem>
 					<PaginationItem>
@@ -175,8 +179,9 @@ export function DataTable({ data, onUpdateDate }: DataTableProps) {
 							aria-label={t("table.previousPage")}
 							onClick={() => table.previousPage()}
 							disabled={!table.getCanPreviousPage()}
+							className="h-8 w-8"
 						>
-							<ChevronLeft />
+							<ChevronLeft className="h-4 w-4" />
 						</Button>
 					</PaginationItem>
 					<PaginationItem>
@@ -186,8 +191,9 @@ export function DataTable({ data, onUpdateDate }: DataTableProps) {
 							aria-label={t("table.nextPage")}
 							onClick={() => table.nextPage()}
 							disabled={!table.getCanNextPage()}
+							className="h-8 w-8"
 						>
-							<ChevronRight />
+							<ChevronRight className="h-4 w-4" />
 						</Button>
 					</PaginationItem>
 					<PaginationItem>
@@ -197,6 +203,7 @@ export function DataTable({ data, onUpdateDate }: DataTableProps) {
 							aria-label={t("table.lastPage")}
 							onClick={() => table.lastPage()}
 							disabled={!table.getCanNextPage()}
+							className="h-8 w-8"
 						>
 							<ChevronsRight />
 						</Button>

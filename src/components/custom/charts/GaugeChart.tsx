@@ -338,14 +338,14 @@ function GaugeChartComponent({
 
 	return (
 		<Card className={cn("w-full", className)}>
-			<CardHeader className="items-center">
-				<CardTitle className="flex items-center gap-2">
-					{icon ?? <Cloud className="size-5 text-muted-foreground" />}
-					<span>{title}</span>
+			<CardHeader className="items-center p-4 md:p-6">
+				<CardTitle className="flex items-center gap-2 text-sm md:text-base">
+					{icon ?? <Cloud className="size-4 md:size-5 text-muted-foreground" />}
+					<span className="text-center">{title}</span>
 				</CardTitle>
 				<CardAction>
 					<span
-						className="rounded-full px-3 py-1 text-xs font-semibold text-white"
+						className="rounded-full px-2.5 md:px-3 py-0.5 md:py-1 text-xs font-semibold text-white"
 						style={{ backgroundColor: fillColor }}
 					>
 						{statusLabel}

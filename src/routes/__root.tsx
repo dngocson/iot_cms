@@ -86,7 +86,7 @@ function RootComponent() {
 		<>
 			{!hideChrome && <Header />}
 
-			<div className="mx-auto w-3/4 max-w-300">
+			<div className="mx-auto w-full px-4 sm:w-11/12 md:w-5/6 lg:w-3/4 max-w-300 py-4 md:py-6">
 				<Outlet />
 			</div>
 
