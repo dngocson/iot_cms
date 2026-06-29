@@ -9,6 +9,7 @@ import {
 	TriangleAlert,
 } from "lucide-react";
 import { AnimatePresence, motion, type Variants } from "motion/react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export const headerLinks = [
@@ -69,8 +70,28 @@ export function HeaderNav() {
 	const location = useLocation();
 	const { t } = useTranslation();
 
+	// Optimistic active path. TanStack Router commits navigation inside
+	// `React.startTransition`, and `useLocation()` updates as part of that same
+	// transition — the one that also renders the (heavy) target route. If the
+	// button's active state were driven straight off `location.pathname`, the
+	// expand/rotate/pulse animation would be queued behind the route render and
+	// only start after it commits (the ~265ms click handler).
+	//
+	// Driving the animation off this local state instead lets us flip it at
+	// urgent priority the moment the user clicks, so the header animates and
+	// paints first while the page render proceeds in the background transition.
+	const [activePath, setActivePath] = useState(location.pathname);
+
+	// Keep in sync with navigations that don't originate here (back/forward,
+	// redirects, links elsewhere in the app).
+	useEffect(() => {
+		setActivePath(location.pathname);
+	}, [location.pathname]);
+
 	const handleNavigation = (href: string) => {
-		navigate({ to: href });
+		if (href === activePath) return;
+		setActivePath(href); // urgent: animate immediately
+		navigate({ to: href }); // deferred: router renders the page in its transition
 	};
 
 	return (
@@ -81,7 +102,7 @@ export function HeaderNav() {
 			className="hidden lg:flex items-center gap-3 ml-auto"
 		>
 			{headerLinks.map((link) => {
-				const isActive = location.pathname === link.href;
+				const isActive = activePath === link.href;
 
 				return (
 					<motion.button
