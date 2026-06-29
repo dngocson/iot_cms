@@ -4,7 +4,6 @@ import {
 	createRootRouteWithContext,
 	Outlet,
 	redirect,
-	useRouterState,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 
@@ -78,13 +77,9 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 function RootComponent() {
 	useTheme();
 
-	const hideChrome = useRouterState({
-		select: (state) => isPublicRoute(state.location.pathname),
-	});
-
 	return (
 		<>
-			{!hideChrome && <Header />}
+			<Header />	
 
 			<div className="mx-auto w-full px-4 sm:w-11/12 md:w-5/6 lg:w-3/4 max-w-300 py-4 md:py-6">
 				<Outlet />

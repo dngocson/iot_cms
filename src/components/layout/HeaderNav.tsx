@@ -9,7 +9,7 @@ import {
 	TriangleAlert,
 } from "lucide-react";
 import { AnimatePresence, motion, type Variants } from "motion/react";
-import { useEffect, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export const headerLinks = [
@@ -88,12 +88,15 @@ export function HeaderNav() {
 		setActivePath(location.pathname);
 	}, [location.pathname]);
 
-	const handleNavigation = (href: string) => {
-		if (href === activePath) return;
-		setActivePath(href); // urgent: animate immediately
-		navigate({ to: href }); // deferred: router renders the page in its transition
-	};
+const handleNavigation = (href: string) => {
+    if (href === activePath) return;
 
+    setActivePath(href);
+
+    startTransition(() => {
+        navigate({ to: href });
+    });
+};
 	return (
 		<motion.div
 			variants={containerVariants}
