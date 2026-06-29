@@ -25,6 +25,13 @@ const config = defineConfig({
 	server: {
 		host: "0.0.0.0",
 		port: 5173,
+		proxy: {
+      "/valhalla": {
+        target: "https://valhalla1.openstreetmap.de",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/valhalla/, ""),
+      },
+    },
 	},
 });
 
