@@ -1,6 +1,6 @@
 import { Cloud } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	Label,
@@ -76,7 +76,7 @@ const describeArc = (
 	const sweep = endAngle < startAngle ? 1 : 0; // đổi > thành
 	return `M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} ${sweep} ${x2} ${y2}`;
 };
-export function GaugeChart({
+function GaugeChartComponent({
 	data,
 	label,
 	unit = "",
@@ -95,12 +95,20 @@ export function GaugeChart({
 		if (!el) return;
 		const ro = new ResizeObserver(([entry]) => {
 			const { width, height } = entry.contentRect;
-			setChartSize({ width, height });
+			// Skip no-op updates so an observer firing with an unchanged size
+			// (common on remount) does not schedule a wasted re-render.
+			setChartSize((prev) =>
+				prev.width === width && prev.height === height
+					? prev
+					: { width, height },
+			);
 		});
 		ro.observe(el);
 		return () => ro.disconnect();
 	}, []);
 
+	// Validation/clamping is pure over `data`; recompute only when the reading
+	// actually changes, not on resize-driven or parent-driven re-renders.
 	const {
 		min,
 		max,
@@ -110,29 +118,56 @@ export function GaugeChart({
 		clampedCurrent,
 		status,
 		outOfRange,
-	} = normalizeGaugeData(data);
+	} = useMemo(() => normalizeGaugeData(data), [data]);
 
 	const hasCurrent = current !== null;
 	const fillColor =
 		status === "noConnection" ? "var(--muted-foreground)" : ZONE_COLOR[status];
 	const markerEpsilon = (max - min) * 1e-6;
-	const ticks = generateGaugeTicks(min, max, lowLevel, highLevel, segments);
-	const majorValues = new Set(
-		ticks.filter((tick) => tick.major).map((tick) => tick.value),
+
+	// Scale ticks + axis domain only depend on the range/thresholds/reading —
+	// never on the measured pixel size, so this survives every resize render.
+	const { axisTicks, majorValues } = useMemo(() => {
+		const ticks = generateGaugeTicks(min, max, lowLevel, highLevel, segments);
+		const majors = new Set(
+			ticks.filter((tick) => tick.major).map((tick) => tick.value),
+		);
+		const tickValues = ticks.map((tick) => tick.value);
+		const currentTickExists =
+			hasCurrent &&
+			tickValues.some(
+				(tick) => Math.abs(tick - clampedCurrent) <= markerEpsilon,
+			);
+		return {
+			axisTicks:
+				hasCurrent && !currentTickExists
+					? [...tickValues, clampedCurrent]
+					: tickValues,
+			majorValues: majors,
+		};
+	}, [
+		min,
+		max,
+		lowLevel,
+		highLevel,
+		segments,
+		hasCurrent,
+		clampedCurrent,
+		markerEpsilon,
+	]);
+
+	// Stable single-datum array for the radial bar. A fresh array reference each
+	// render makes Recharts re-process its series; keeping it stable lets the bar
+	// stay put across resize/parent re-renders.
+	const chartData = useMemo(
+		() => [{ value: hasCurrent ? clampedCurrent : min }],
+		[hasCurrent, clampedCurrent, min],
 	);
-	const tickValues = ticks.map((tick) => tick.value);
-	const currentTickExists =
-		hasCurrent &&
-		tickValues.some((tick) => Math.abs(tick - clampedCurrent) <= markerEpsilon);
 
-	const axisTicks =
-		hasCurrent && !currentTickExists
-			? [...tickValues, clampedCurrent]
-			: tickValues;
-
-	const chartConfig = {
-		value: { label, color: fillColor },
-	} satisfies ChartConfig;
+	const chartConfig = useMemo(
+		() => ({ value: { label, color: fillColor } }) satisfies ChartConfig,
+		[label, fillColor],
+	);
 
 	const valueDisplay = hasCurrent
 		? (current as number).toFixed(precision)
@@ -151,132 +186,155 @@ export function GaugeChart({
 			})
 		: `${label}: ${statusLabel}.`;
 
-	const minDim = Math.min(chartSize.width, chartSize.height);
-	const cx = chartSize.width / 2;
-	const cy = chartSize.height / 2;
-	const outerRadiusPx = (minDim / 2) * OUTER_RADIUS_PERCENT;
-	const ringR = outerRadiusPx + ZONE_RING_GAP + ZONE_RING_THICKNESS / 2;
+	// Pixel geometry for the zone-ring overlay — the only thing that legitimately
+	// depends on the measured size.
+	const { cx, cy, ringR } = useMemo(() => {
+		const minDim = Math.min(chartSize.width, chartSize.height);
+		const outerRadiusPx = (minDim / 2) * OUTER_RADIUS_PERCENT;
+		return {
+			cx: chartSize.width / 2,
+			cy: chartSize.height / 2,
+			ringR: outerRadiusPx + ZONE_RING_GAP + ZONE_RING_THICKNESS / 2,
+		};
+	}, [chartSize]);
 
-	const zones: Array<{ from: number; to: number; color: string }> = [
-		{ from: min, to: lowLevel, color: ZONE_COLOR.good },
-		{ from: lowLevel, to: highLevel, color: ZONE_COLOR.warning },
-		{ from: highLevel, to: max, color: ZONE_COLOR.bad },
-	];
+	const zones = useMemo<Array<{ from: number; to: number; color: string }>>(
+		() => [
+			{ from: min, to: lowLevel, color: ZONE_COLOR.good },
+			{ from: lowLevel, to: highLevel, color: ZONE_COLOR.warning },
+			{ from: highLevel, to: max, color: ZONE_COLOR.bad },
+		],
+		[min, max, lowLevel, highLevel],
+	);
 
-	const renderTick = (props: {
-		x?: number;
-		y?: number;
-		cx?: number;
-		cy?: number;
-		payload?: { value?: number };
-	}) => {
-		const { cx = 0, cy = 0, x = 0, y = 0 } = props;
-		const value = props.payload?.value ?? 0;
-		const dx = x - cx;
-		const dy = y - cy;
-		const r = Math.hypot(dx, dy) || 1;
-		const ux = dx / r;
-		const uy = dy / r;
+	const renderTick = useCallback(
+		(props: {
+			x?: number;
+			y?: number;
+			cx?: number;
+			cy?: number;
+			payload?: { value?: number };
+		}) => {
+			const { cx = 0, cy = 0, x = 0, y = 0 } = props;
+			const value = props.payload?.value ?? 0;
+			const dx = x - cx;
+			const dy = y - cy;
+			const r = Math.hypot(dx, dy) || 1;
+			const ux = dx / r;
+			const uy = dy / r;
 
-		const isMajor = majorValues.has(value);
-		const isCurrentMarker =
-			hasCurrent && Math.abs(value - clampedCurrent) <= markerEpsilon;
+			const isMajor = majorValues.has(value);
+			const isCurrentMarker =
+				hasCurrent && Math.abs(value - clampedCurrent) <= markerEpsilon;
 
-		if (!isMajor && isCurrentMarker) {
+			if (!isMajor && isCurrentMarker) {
+				const markerRadius = Math.max(4, r * 0.05);
+				return (
+					<g key={`marker-${value}`}>
+						<circle
+							cx={cx + ux * r}
+							cy={cy + uy * r}
+							r={markerRadius}
+							fill={fillColor}
+							stroke="var(--background)"
+							strokeWidth={2}
+						/>
+					</g>
+				);
+			}
+
+			const color = ZONE_COLOR[getZoneStatus(value, lowLevel, highLevel)];
+			const tickLength = isMajor ? r * 0.07 : r * 0.04;
+			const labelRadius = r + tickLength + r * 0.12;
 			const markerRadius = Math.max(4, r * 0.05);
+
 			return (
-				<g key={`marker-${value}`}>
-					<circle
-						cx={cx + ux * r}
-						cy={cy + uy * r}
-						r={markerRadius}
-						fill={fillColor}
-						stroke="var(--background)"
-						strokeWidth={2}
+				<g key={`tick-${value}`}>
+					<line
+						x1={cx + ux * r}
+						y1={cy + uy * r}
+						x2={cx + ux * (r + tickLength)}
+						y2={cy + uy * (r + tickLength)}
+						stroke={color}
+						strokeWidth={isMajor ? 2 : 1}
+						strokeLinecap="round"
+						opacity={isMajor ? 0.9 : 0.4}
 					/>
+					{isMajor ? (
+						<text
+							x={cx + ux * labelRadius}
+							y={cy + uy * labelRadius}
+							fill={color}
+							fontSize={Math.max(9, r * 0.085)}
+							fontWeight={600}
+							textAnchor="middle"
+							dominantBaseline="central"
+						>
+							{formatTickLabel(value)}
+						</text>
+					) : null}
+					{isCurrentMarker ? (
+						<circle
+							cx={cx + ux * r}
+							cy={cy + uy * r}
+							r={markerRadius}
+							fill={fillColor}
+							stroke="var(--background)"
+							strokeWidth={2}
+						/>
+					) : null}
 				</g>
 			);
-		}
+		},
+		[
+			majorValues,
+			hasCurrent,
+			clampedCurrent,
+			markerEpsilon,
+			fillColor,
+			lowLevel,
+			highLevel,
+		],
+	);
 
-		const color = ZONE_COLOR[getZoneStatus(value, lowLevel, highLevel)];
-		const tickLength = isMajor ? r * 0.07 : r * 0.04;
-		const labelRadius = r + tickLength + r * 0.12;
-		const markerRadius = Math.max(4, r * 0.05);
+	const renderCenter = useCallback(
+		({
+			viewBox,
+		}: {
+			viewBox?: { cx?: number; cy?: number; innerRadius?: number };
+		}) => {
+			if (!viewBox || viewBox.cx == null || viewBox.cy == null) return null;
+			const { cx, cy } = viewBox;
+			const innerRadius = viewBox.innerRadius ?? 60;
+			const valueFont = Math.max(18, innerRadius * 0.5);
+			const unitFont = Math.max(10, innerRadius * 0.22);
 
-		return (
-			<g key={`tick-${value}`}>
-				<line
-					x1={cx + ux * r}
-					y1={cy + uy * r}
-					x2={cx + ux * (r + tickLength)}
-					y2={cy + uy * (r + tickLength)}
-					stroke={color}
-					strokeWidth={isMajor ? 2 : 1}
-					strokeLinecap="round"
-					opacity={isMajor ? 0.9 : 0.4}
-				/>
-				{isMajor ? (
-					<text
-						x={cx + ux * labelRadius}
-						y={cy + uy * labelRadius}
-						fill={color}
-						fontSize={Math.max(9, r * 0.085)}
-						fontWeight={600}
-						textAnchor="middle"
-						dominantBaseline="central"
-					>
-						{formatTickLabel(value)}
-					</text>
-				) : null}
-				{isCurrentMarker ? (
-					<circle
-						cx={cx + ux * r}
-						cy={cy + uy * r}
-						r={markerRadius}
-						fill={fillColor}
-						stroke="var(--background)"
-						strokeWidth={2}
-					/>
-				) : null}
-			</g>
-		);
-	};
-
-	const renderCenter = ({
-		viewBox,
-	}: {
-		viewBox?: { cx?: number; cy?: number; innerRadius?: number };
-	}) => {
-		if (!viewBox || viewBox.cx == null || viewBox.cy == null) return null;
-		const { cx, cy } = viewBox;
-		const innerRadius = viewBox.innerRadius ?? 60;
-		const valueFont = Math.max(18, innerRadius * 0.5);
-		const unitFont = Math.max(10, innerRadius * 0.22);
-
-		return (
-			<text x={cx} y={cy} textAnchor="middle">
-				<tspan
-					x={cx}
-					y={cy}
-					fontSize={valueFont}
-					fontWeight={700}
-					fill={fillColor}
-				>
-					{valueDisplay}
-				</tspan>
-				{unit ? (
+			return (
+				<text x={cx} y={cy} textAnchor="middle">
 					<tspan
 						x={cx}
-						y={cy + valueFont * 0.85}
-						fontSize={unitFont}
-						fill="var(--muted-foreground)"
+						y={cy}
+						fontSize={valueFont}
+						fontWeight={700}
+						fill={fillColor}
 					>
-						{unit}
+						{valueDisplay}
 					</tspan>
-				) : null}
-			</text>
-		);
-	};
+					{unit ? (
+						<tspan
+							x={cx}
+							y={cy + valueFont * 0.85}
+							fontSize={unitFont}
+							fill="var(--muted-foreground)"
+						>
+							{unit}
+						</tspan>
+					) : null}
+				</text>
+			);
+		},
+		[fillColor, valueDisplay, unit],
+	);
 
 	return (
 		<Card className={cn("w-full", className)}>
@@ -303,7 +361,7 @@ export function GaugeChart({
 						className="aspect-square w-full"
 					>
 						<RadialBarChart
-							data={[{ value: hasCurrent ? clampedCurrent : min }]}
+							data={chartData}
 							startAngle={START_ANGLE}
 							endAngle={END_ANGLE}
 							innerRadius="60%"
@@ -323,7 +381,7 @@ export function GaugeChart({
 								background
 								cornerRadius={5}
 								fill="var(--color-value)"
-								isAnimationActive={true}
+								isAnimationActive={false}
 							/>
 							<PolarRadiusAxis tick={false} axisLine={false}>
 								<Label content={renderCenter as unknown as LabelContent} />
@@ -370,3 +428,28 @@ export function GaugeChart({
 		</Card>
 	);
 }
+
+/**
+ * Compare by the gauge's actual inputs rather than the `data` object reference.
+ * Callers almost always pass an inline `data={{ ... }}` literal (a new object
+ * every render), so a default shallow compare would never hit. Comparing the
+ * five numeric fields lets the chart skip re-renders that carry identical
+ * readings — e.g. when the parent route re-renders after its query resolves.
+ */
+function gaugePropsAreEqual(prev: GaugeChartProps, next: GaugeChartProps) {
+	return (
+		prev.label === next.label &&
+		prev.unit === next.unit &&
+		prev.precision === next.precision &&
+		prev.segments === next.segments &&
+		prev.className === next.className &&
+		prev.icon === next.icon &&
+		prev.data.min === next.data.min &&
+		prev.data.max === next.data.max &&
+		prev.data.current === next.data.current &&
+		prev.data.lowLevel === next.data.lowLevel &&
+		prev.data.highLevel === next.data.highLevel
+	);
+}
+
+export const GaugeChart = memo(GaugeChartComponent, gaugePropsAreEqual);
