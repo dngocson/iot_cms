@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import L from "leaflet";
 import { useEffect, useRef, useState } from "react";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
-import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -18,6 +18,8 @@ export const Route = createFileRoute("/water-meter/")({
 	component: RouteComponent,
 });
 
+// ⚠️ TODO (security): key này đang lộ ở client, ai mở DevTools cũng lấy được.
+// Nên chuyển các call ORS qua 1 backend proxy nhỏ, giữ key ở server.
 const ORS_API_KEY =
 	"eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjQzNGY4ZGUxZmQzMDQ3MjI5OGU0NDg3ZGFjOTllZjM0IiwiaCI6Im11cm11cjY0In0=";
 const ORS_URL =
@@ -40,21 +42,22 @@ interface NavigationConfig {
 	gpsUpdateIntervalMs: number; // milliseconds
 }
 
-// Default configuration
 const DEFAULT_CONFIG: NavigationConfig = {
 	rerouteDistanceThreshold: 50, // 50 meters
 	rerouteCooldownMs: 30000, // 30 seconds
 	gpsUpdateIntervalMs: 1000, // 1 second
 };
 
-// RouteManager - handles route calculation and caching
+// ============================================================
+// RouteManager - gọi ORS API và cache kết quả route hiện tại
+// ============================================================
 class RouteManager {
 	private currentRoute: RouteInfo | null = null;
 	private isCalculating = false;
 	private abortController: AbortController | null = null;
 
 	async calculateRoute(waypoints: Waypoint[]): Promise<RouteInfo | null> {
-		// Cancel any pending request
+		// Hủy request đang chờ (nếu có) trước khi gọi request mới
 		this.cancelPending();
 
 		if (waypoints.length < 2) {
@@ -89,7 +92,7 @@ class RouteManager {
 			}
 
 			const coordinates: L.LatLng[] = feature.geometry.coordinates.map(
-				([lng, lat]: [number, number]) => L.latLng(lat, lng)
+				([lng, lat]: [number, number]) => L.latLng(lat, lng),
 			);
 
 			const { distance, duration } = feature.properties.summary;
@@ -133,7 +136,9 @@ class RouteManager {
 	}
 }
 
-// VehicleMarker - handles live GPS position updates
+// ============================================================
+// VehicleMarker - marker vị trí GPS hiện tại, reuse marker cũ
+// ============================================================
 class VehicleMarker {
 	private marker: L.Marker | null = null;
 	private map: L.Map;
@@ -147,7 +152,6 @@ class VehicleMarker {
 		this.currentPosition = latLng;
 
 		if (!this.marker) {
-			// Create marker with custom icon for vehicle
 			const vehicleIcon = L.divIcon({
 				className: "vehicle-marker",
 				html: '<div style="width: 20px; height: 20px; background: #3b82f6; border: 3px solid white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
@@ -157,7 +161,6 @@ class VehicleMarker {
 
 			this.marker = L.marker(latLng, { icon: vehicleIcon }).addTo(this.map);
 		} else {
-			// Reuse existing marker, just update position
 			this.marker.setLatLng(latLng);
 		}
 	}
@@ -185,7 +188,9 @@ class VehicleMarker {
 	}
 }
 
-// NavigationManager - coordinates routing decisions
+// ============================================================
+// NavigationManager - điều phối route + reroute + vẽ lên map
+// ============================================================
 class NavigationManager {
 	private routeManager: RouteManager;
 	private vehicleMarker: VehicleMarker;
@@ -194,12 +199,9 @@ class NavigationManager {
 	private map: L.Map;
 	private routePolyline: L.Polyline | null = null;
 	private waypointMarkers: L.Marker[] = [];
-	private pendingReroute: NodeJS.Timeout | null = null;
+	private pendingReroute: ReturnType<typeof setTimeout> | null = null;
 
-	constructor(
-		map: L.Map,
-		config: NavigationConfig = DEFAULT_CONFIG
-	) {
+	constructor(map: L.Map, config: NavigationConfig = DEFAULT_CONFIG) {
 		this.map = map;
 		this.config = config;
 		this.routeManager = new RouteManager();
@@ -209,16 +211,14 @@ class NavigationManager {
 	async setDestination(
 		waypoints: Waypoint[],
 		onRouteFound?: (info: RouteInfo) => void,
-		onError?: (msg: string) => void
+		onError?: (msg: string) => void,
 	): Promise<void> {
-		// Clear existing route visualization
 		this.clearRouteVisualization();
 
-		// Add waypoint markers
 		waypoints.forEach((wp, index) => {
 			const isStart = index === 0;
 			const isEnd = index === waypoints.length - 1;
-			
+
 			const marker = L.marker([wp.lat, wp.lng], {
 				icon: L.divIcon({
 					className: "waypoint-marker",
@@ -250,12 +250,10 @@ class NavigationManager {
 		position: L.LatLng,
 		waypoints: Waypoint[],
 		onReroute?: (info: RouteInfo) => void,
-		onError?: (msg: string) => void
+		onError?: (msg: string) => void,
 	): void {
-		// Update vehicle marker position immediately
 		this.vehicleMarker.updatePosition(position);
 
-		// Check if reroute is needed (throttled)
 		if (this.shouldReroute(position)) {
 			this.scheduleReroute(waypoints, onReroute, onError);
 		}
@@ -263,50 +261,41 @@ class NavigationManager {
 
 	private shouldReroute(currentPos: L.LatLng): boolean {
 		const route = this.routeManager.getCurrentRoute();
-		
-		// No route exists, no need to reroute
+
 		if (!route || route.coordinates.length === 0) {
 			return false;
 		}
 
-		// Check cooldown period
 		const now = Date.now();
 		if (now - this.lastRerouteTime < this.config.rerouteCooldownMs) {
 			return false;
 		}
 
-		// Check if already calculating
 		if (this.routeManager.isRouteCalculating()) {
 			return false;
 		}
 
-		// Find closest point on route
 		const closestPoint = this.findClosestPointOnRoute(
 			currentPos,
-			route.coordinates
+			route.coordinates,
 		);
 
-		// Calculate distance from route
 		const distanceFromRoute = currentPos.distanceTo(closestPoint);
 
-		// Reroute if deviated beyond threshold
 		return distanceFromRoute > this.config.rerouteDistanceThreshold;
 	}
 
 	private scheduleReroute(
 		waypoints: Waypoint[],
 		onReroute?: (info: RouteInfo) => void,
-		onError?: (msg: string) => void
+		onError?: (msg: string) => void,
 	): void {
-		// Clear any pending reroute
 		if (this.pendingReroute) {
 			clearTimeout(this.pendingReroute);
 		}
 
-		// Debounce: wait a bit before actually rerouting
 		this.pendingReroute = setTimeout(async () => {
 			try {
-				// Update start point to current vehicle position
 				const currentPos = this.vehicleMarker.getPosition();
 				if (currentPos) {
 					const updatedWaypoints = [
@@ -314,7 +303,8 @@ class NavigationManager {
 						...waypoints.slice(1),
 					];
 
-					const route = await this.routeManager.calculateRoute(updatedWaypoints);
+					const route =
+						await this.routeManager.calculateRoute(updatedWaypoints);
 
 					if (route) {
 						this.drawRoute(route);
@@ -324,7 +314,8 @@ class NavigationManager {
 					}
 				}
 			} catch (error) {
-				const message = error instanceof Error ? error.message : "Reroute failed";
+				const message =
+					error instanceof Error ? error.message : "Reroute failed";
 				console.error("Reroute error:", error);
 				onError?.(message);
 			}
@@ -334,7 +325,7 @@ class NavigationManager {
 
 	private findClosestPointOnRoute(
 		point: L.LatLng,
-		routeCoordinates: L.LatLng[]
+		routeCoordinates: L.LatLng[],
 	): L.LatLng {
 		let closestPoint = routeCoordinates[0];
 		let minDistance = point.distanceTo(closestPoint);
@@ -351,19 +342,16 @@ class NavigationManager {
 	}
 
 	private drawRoute(route: RouteInfo): void {
-		// Remove old polyline if exists
 		if (this.routePolyline) {
 			this.routePolyline.remove();
 		}
 
-		// Create new polyline (or reuse if we want even more optimization)
 		this.routePolyline = L.polyline(route.coordinates, {
 			color: "#3b82f6",
 			weight: 6,
 			opacity: 0.85,
 		}).addTo(this.map);
 
-		// Fit bounds to show entire route
 		this.map.fitBounds(this.routePolyline.getBounds(), { padding: [40, 40] });
 	}
 
@@ -373,7 +361,9 @@ class NavigationManager {
 			this.routePolyline = null;
 		}
 
-		this.waypointMarkers.forEach((marker) => marker.remove());
+		for (const marker of this.waypointMarkers) {
+			marker.remove();
+		}
 		this.waypointMarkers = [];
 	}
 
@@ -409,6 +399,18 @@ interface NavigationLayerProps {
 	onRouteError?: (msg: string) => void;
 }
 
+// ============================================================
+// NavigationLayer
+// ------------------------------------------------------------
+// 4 effect riêng biệt, mỗi effect làm ĐÚNG MỘT việc:
+//   1. Tạo/hủy NavigationManager  → chạy 1 lần theo `map`
+//   2. Đẩy config mới vào manager  → chạy khi `config` đổi (không gọi API)
+//   3. Tính route                  → chạy khi `waypoints` đổi (nơi DUY NHẤT gọi setDestination)
+//   4. Giả lập GPS                 → chạy khi bật/tắt simulateGPS
+//
+// Trước đây effect (1) và (3) đều tự gọi setDestination() nên mỗi lần
+// mount/đổi waypoints, ORS API bị gọi 2 lần. Giờ chỉ effect (3) làm việc đó.
+// ============================================================
 function NavigationLayer({
 	waypoints,
 	simulateGPS = false,
@@ -418,63 +420,95 @@ function NavigationLayer({
 }: NavigationLayerProps) {
 	const map = useMap();
 	const navManagerRef = useRef<NavigationManager | null>(null);
-	const gpsSimulatorRef = useRef<NodeJS.Timeout | null>(null);
+	const gpsSimulatorRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+	// Luôn giữ callback mới nhất trong ref, để các effect bên dưới KHÔNG cần
+	// liệt kê onRouteFound/onRouteError vào dependency array. Nếu không làm
+	// vậy, một inline function `() => {}` truyền từ component cha (reference
+	// mới mỗi lần render) sẽ khiến effect chạy lại không cần thiết.
+	const onRouteFoundRef = useRef(onRouteFound);
+	const onRouteErrorRef = useRef(onRouteError);
+	useEffect(() => {
+		onRouteFoundRef.current = onRouteFound;
+		onRouteErrorRef.current = onRouteError;
+	});
+
+	// 1) Tạo NavigationManager một lần cho mỗi map instance, dọn dẹp khi unmount.
+	//    KHÔNG gọi setDestination ở đây nữa.
 	useEffect(() => {
 		if (!map) return;
 
-		// Initialize navigation manager
-		const navConfig = { ...DEFAULT_CONFIG, ...config };
-		navManagerRef.current = new NavigationManager(map, navConfig);
+		const manager = new NavigationManager(map, {
+			...DEFAULT_CONFIG,
+			...config,
+		});
+		navManagerRef.current = manager;
 
-		// Set initial destination
-		navManagerRef.current.setDestination(waypoints, onRouteFound, onRouteError);
+		return () => {
+			manager.cleanup();
+			navManagerRef.current = null;
+		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [map]);
 
-		// Simulate GPS updates if enabled
-		if (simulateGPS) {
-			let currentIndex = 0;
-			const route = navManagerRef.current.getCurrentRoute();
-
-			if (route && route.coordinates.length > 0) {
-				gpsSimulatorRef.current = setInterval(() => {
-					if (!navManagerRef.current) return;
-
-					const routeCoords = navManagerRef.current.getCurrentRoute()?.coordinates;
-					if (!routeCoords || currentIndex >= routeCoords.length) {
-						if (gpsSimulatorRef.current) {
-							clearInterval(gpsSimulatorRef.current);
-						}
-						return;
-					}
-
-					// Simulate GPS position along route
-					const position = routeCoords[currentIndex];
-					navManagerRef.current.handleGPSUpdate(
-						position,
-						waypoints,
-						onRouteFound,
-						onRouteError
-					);
-
-					currentIndex += 5; // Skip points for faster simulation
-				}, navConfig.gpsUpdateIntervalMs);
-			}
+	// 2) Config đổi -> update tại chỗ, không tạo lại manager, không gọi API.
+	useEffect(() => {
+		if (config) {
+			navManagerRef.current?.updateConfig(config);
 		}
+	}, [config]);
+
+	// 3) Waypoints đổi -> đây là nơi DUY NHẤT gọi setDestination (=> gọi ORS API).
+	useEffect(() => {
+		if (!navManagerRef.current || waypoints.length < 2) return;
+
+		navManagerRef.current.setDestination(
+			waypoints,
+			(info) => onRouteFoundRef.current?.(info),
+			(msg) => onRouteErrorRef.current?.(msg),
+		);
+	}, [waypoints]);
+
+	// 4) Giả lập GPS chạy dọc route hiện có (không gọi API routing, chỉ đọc
+	//    coordinates đã có sẵn). Tách hẳn khỏi logic tính route ở trên.
+	useEffect(() => {
+		if (!simulateGPS) return;
+
+		let currentIndex = 0;
+		const intervalMs =
+			config?.gpsUpdateIntervalMs ?? DEFAULT_CONFIG.gpsUpdateIntervalMs;
+
+		gpsSimulatorRef.current = setInterval(() => {
+			const manager = navManagerRef.current;
+			if (!manager) return;
+
+			const route = manager.getCurrentRoute()?.coordinates;
+
+			if (!route || currentIndex >= route.length) {
+				if (gpsSimulatorRef.current) clearInterval(gpsSimulatorRef.current);
+				return;
+			}
+
+			manager.handleGPSUpdate(
+				route[currentIndex],
+				waypoints,
+				(info) => onRouteFoundRef.current?.(info),
+				(msg) => onRouteErrorRef.current?.(msg),
+			);
+
+			currentIndex += 5;
+		}, intervalMs);
 
 		return () => {
 			if (gpsSimulatorRef.current) {
 				clearInterval(gpsSimulatorRef.current);
+				gpsSimulatorRef.current = null;
 			}
-			navManagerRef.current?.cleanup();
 		};
-	}, [map]);
-
-	// Update destination when waypoints change
-	useEffect(() => {
-		if (navManagerRef.current && waypoints.length >= 2) {
-			navManagerRef.current.setDestination(waypoints, onRouteFound, onRouteError);
-		}
-	}, [waypoints]);
+		// waypoints chỉ dùng để truyền vào handleGPSUpdate cho lúc reroute,
+		// không cần re-tạo interval mỗi khi nó đổi identity nhỏ lẻ.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [simulateGPS, config?.gpsUpdateIntervalMs]);
 
 	return null;
 }
@@ -531,7 +565,10 @@ function RouteComponent() {
 					/>
 					<NavigationLayer
 						waypoints={waypoints}
-						simulateGPS={true}
+						// Đổi thành true chỉ khi bạn thực sự muốn xem marker tự
+						// chạy dọc tuyến đường để test/demo. Mặc định để false
+						// để marker không tự di chuyển ngoài ý muốn.
+						simulateGPS={false}
 						onRouteFound={setRouteInfo}
 						onRouteError={setError}
 					/>
